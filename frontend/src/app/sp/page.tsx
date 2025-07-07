@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from './components/Header';
 import FolderItem from './components/FolderItem';
 import BottomNavigation from './components/BottomNavigation';
@@ -13,6 +14,7 @@ interface MailFolder {
 }
 
 export default function SpMailPage() {
+  const router = useRouter();
   const [folders] = useState<MailFolder[]>([
     { id: '1', name: '受信トレイ', unreadCount: 15, icon: '📥' },
     { id: '2', name: '送信済み', unreadCount: 0, icon: '📤' },
@@ -26,7 +28,10 @@ export default function SpMailPage() {
   const [activeNavItem, setActiveNavItem] = useState('home');
 
   const handleFolderClick = (folderId: string) => {
-    console.log('Folder clicked:', folderId);
+    const folder = folders.find(f => f.id === folderId);
+    if (folder) {
+      router.push(`/sp/folder/${encodeURIComponent(folder.name)}`);
+    }
   };
 
   const handleNavClick = (itemId: string) => {
