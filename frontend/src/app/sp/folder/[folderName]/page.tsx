@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "../../components/Header";
-import BottomNavigation from "../../components/BottomNavigation";
-import MailList from "../../components/MailList";
-import { emails as email_data, type MailItem } from "../../../lib/data/emails";
+import { Header, BottomNavigation } from "../../../../components";
+import { MailList } from "../../../../features/emails";
+import { emails, type MailItem } from "../../../../lib/data/emails";
+import { decodeRouterPath } from "../../../../utils/navigation";
 
 interface FolderPageProps {
   params: {
@@ -15,10 +15,10 @@ interface FolderPageProps {
 
 export default function FolderPage({ params }: FolderPageProps) {
   const router = useRouter();
-  const folderName = decodeURIComponent(params.folderName);
+  const folderName = decodeRouterPath(params.folderName);
   const [activeNavItem, setActiveNavItem] = useState("home");
 
-  const [emails] = useState<MailItem[]>(email_data);
+  const [emailList] = useState<MailItem[]>(emails);
 
   const handleBackClick = () => {
     router.push("/sp");
@@ -48,7 +48,7 @@ export default function FolderPage({ params }: FolderPageProps) {
       />
 
       <MailList
-        emails={emails}
+        emails={emailList}
         onMailClick={handleMailClick}
         onStarClick={handleStarClick}
       />

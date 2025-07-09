@@ -36,7 +36,28 @@ npm run lint
 - Frontend runs on http://localhost:3000
 - Uses Turbopack for faster development builds
 
-## Architecture Notes
+## Architecture Guidelines
+
+### Code Organization (Bulletproof React)
+This project follows [Bulletproof React](https://github.com/alan2207/bulletproof-react) architecture patterns:
+
+```
+frontend/src/
+├── app/                    # Next.js App Router pages
+├── components/             # Shared/reusable components
+├── features/               # Feature-based modules
+├── hooks/                  # Shared custom hooks
+├── types/                  # TypeScript type definitions
+├── utils/                  # Utility functions
+└── lib/                    # External library re-exports
+```
+
+**Key Rules:**
+- **Feature-based architecture**: Group related functionality in `features/` directory
+- **Shared resources**: Put reusable components, hooks, types, and utils at root level
+- **lib/ directory**: ONLY for re-exporting external libraries with custom configurations
+- **Component co-location**: Keep components, their tests, and styles together
+- **Barrel exports**: Use `index.ts` files for clean imports
 
 ### Frontend Stack
 - **Framework**: Next.js 15 with App Router
@@ -47,7 +68,8 @@ npm run lint
 - **ESLint**: Next.js TypeScript configuration
 
 ### Project Status
-- Frontend has basic structure but minimal implementation (empty home page)
+- Frontend implements mobile-first email client UI
+- Features: Folder list, email list with dynamic routing
 - Backend directory exists but contains no files
 - Located in Go workspace structure but no Go code present yet
 
