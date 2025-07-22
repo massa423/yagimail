@@ -32,7 +32,7 @@ export default function FolderPage({ params }: FolderPageProps) {
   };
 
   const handleMailClick = (emailId: string) => {
-    console.log("Mail clicked:", emailId);
+    router.push(`/sp/folder/${encodeURIComponent(folderName)}/mail/${emailId}`);
   };
 
   const handleStarClick = (emailId: string) => {
