@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header, BottomNavigation } from '@/components';
 import { MailList } from '@/features/emails';
@@ -16,19 +15,11 @@ type FolderPageProps = {
 export default function FolderPage({ params }: FolderPageProps) {
   const router = useRouter();
   const folderName = decodeRouterPath(params.folderName);
-  const [activeNavItem, setActiveNavItem] = useState('home');
 
   const { emails: emailList, toggleStar } = useEmailContext();
 
   const handleBackClick = () => {
     router.push('/sp');
-  };
-
-  const handleNavClick = (itemId: string) => {
-    setActiveNavItem(itemId);
-    if (itemId === 'home') {
-      router.push('/sp');
-    }
   };
 
   const handleMailClick = (emailId: string) => {
@@ -54,10 +45,7 @@ export default function FolderPage({ params }: FolderPageProps) {
         onStarClick={handleStarClick}
       />
 
-      <BottomNavigation
-        activeItem={activeNavItem}
-        onItemClick={handleNavClick}
-      />
+      <BottomNavigation />
 
       <div className="h-16"></div>
     </div>

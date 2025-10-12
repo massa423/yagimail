@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Header, BottomNavigation } from '@/components';
 import { decodeRouterPath } from '@/utils/navigation';
@@ -18,7 +17,6 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
   const router = useRouter();
   const folderName = decodeRouterPath(params.folderName);
   const emailId = params.emailId;
-  const [activeNavItem, setActiveNavItem] = useState('home');
 
   const { getEmailById, toggleStar } = useEmailContext();
   const email = getEmailById(emailId);
@@ -33,13 +31,6 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
 
   const handleBackClick = () => {
     router.push(`/sp/folder/${encodeURIComponent(folderName)}`);
-  };
-
-  const handleNavClick = (itemId: string) => {
-    setActiveNavItem(itemId);
-    if (itemId === 'home') {
-      router.push('/sp');
-    }
   };
 
   const handleReplyClick = () => {
@@ -75,10 +66,7 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
         onStarToggle={handleStarToggle}
       />
 
-      <BottomNavigation
-        activeItem={activeNavItem}
-        onItemClick={handleNavClick}
-      />
+      <BottomNavigation />
 
       <div className="h-16"></div>
     </div>

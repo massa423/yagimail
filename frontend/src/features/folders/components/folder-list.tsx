@@ -1,15 +1,7 @@
 import FolderItem from '@/features/folders/components/folder-item';
-import { type MailFolder } from '@/lib/data/folders';
+import { folders } from '@/lib/data/folders';
 
-type FolderListProps = {
-  folders: MailFolder[];
-  onFolderClick?: (folderId: string) => void;
-};
-
-export default function FolderList({
-  folders,
-  onFolderClick,
-}: FolderListProps) {
+export default async function FolderList() {
   return (
     <div className="p-2">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -17,7 +9,6 @@ export default function FolderList({
           <FolderItem
             key={folder.id}
             folder={folder}
-            onClick={() => onFolderClick?.(folder.id)}
             isLast={index === folders.length - 1}
           />
         ))}

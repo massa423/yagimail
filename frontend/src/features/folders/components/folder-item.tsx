@@ -1,4 +1,6 @@
 import FolderIconMap from '@/features/folders/components/folder-icon-map';
+import Link from 'next/link';
+import { generateFolderPath } from '@/utils/navigation';
 
 type FolderItemProps = {
   folder: {
@@ -7,20 +9,15 @@ type FolderItemProps = {
     unreadCount: number;
     icon: string;
   };
-  onClick?: () => void;
   isLast?: boolean;
 };
 
-export default function FolderItem({
-  folder,
-  onClick,
-  isLast,
-}: FolderItemProps) {
+export default async function FolderItem({ folder, isLast }: FolderItemProps) {
   return (
     <div>
-      <div
+      <Link
         className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
-        onClick={onClick}
+        href={generateFolderPath(folder.name)}
       >
         <div className="flex items-center space-x-3">
           <FolderIconMap folderName={folder.name} />
@@ -33,7 +30,7 @@ export default function FolderItem({
             {folder.unreadCount > 99 ? '99+' : folder.unreadCount}
           </div>
         )}
-      </div>
+      </Link>
       {!isLast && <div className="border-b border-gray-100 ml-12" />}
     </div>
   );
