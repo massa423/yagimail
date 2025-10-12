@@ -1,1 +1,1 @@
-export * from './email-context';
+export * from '@/contexts/email-context';

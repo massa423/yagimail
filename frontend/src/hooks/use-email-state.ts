@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { emails as initialEmails, type MailItem } from '../lib/data/emails';
+import { emails as initialEmails, type MailItem } from '@/lib/data/emails';
 
 export const useEmailState = () => {
   const [emails, setEmails] = useState<MailItem[]>(initialEmails);

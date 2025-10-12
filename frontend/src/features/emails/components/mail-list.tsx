@@ -1,5 +1,5 @@
-import MailItem from './mail-item';
-import { type MailItem as MailItemType } from '../../../lib/data/emails';
+import MailItem from '@/features/emails/components/mail-item';
+import { type MailItem as MailItemType } from '@/lib/data/emails';
 
 interface MailListProps {
   emails: MailItemType[];

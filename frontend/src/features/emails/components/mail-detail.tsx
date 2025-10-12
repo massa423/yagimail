@@ -2,8 +2,8 @@ import {
   UserIcon,
   StarFilledIcon,
   StarOutlineIcon,
-} from '../../../components/ui/icons/mail-icons';
-import { type MailItem } from '../../../lib/data/emails';
+} from '@/components/ui/icons/mail-icons';
+import { type MailItem } from '@/lib/data/emails';
 
 interface MailDetailProps {
   email: MailItem & { content?: string };

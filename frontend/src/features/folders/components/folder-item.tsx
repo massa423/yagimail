@@ -1,4 +1,4 @@
-import FolderIconMap from './folder-icon-map';
+import FolderIconMap from '@/features/folders/components/folder-icon-map';
 
 interface FolderItemProps {
   folder: {

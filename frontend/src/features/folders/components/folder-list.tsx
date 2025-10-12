@@ -1,5 +1,5 @@
-import FolderItem from './folder-item';
-import { type MailFolder } from '../../../lib/data/folders';
+import FolderItem from '@/features/folders/components/folder-item';
+import { type MailFolder } from '@/lib/data/folders';
 
 interface FolderListProps {
   folders: MailFolder[];

@@ -1,4 +1,4 @@
-import { type MailFolder } from '../../types/mail';
+import { type MailFolder } from '@/types/mail';
 
 export type { MailFolder };
 

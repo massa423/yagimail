@@ -1,4 +1,4 @@
-import { BackIcon } from './icons/navigation-icons';
+import { BackIcon } from '@/components/ui/icons/navigation-icons';
 
 interface HeaderProps {
   title: string;

@@ -1,2 +1,2 @@
-export * from './navigation';
-export * from './mail';
+export * from '@/utils/navigation';
+export * from '@/utils/mail';

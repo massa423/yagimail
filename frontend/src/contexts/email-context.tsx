@@ -7,7 +7,7 @@ import {
   useCallback,
   ReactNode,
 } from 'react';
-import { emails as initialEmails, type MailItem } from '../lib/data/emails';
+import { emails as initialEmails, type MailItem } from '@/lib/data/emails';
 
 interface EmailContextType {
   emails: MailItem[];

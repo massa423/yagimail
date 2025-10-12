@@ -6,7 +6,7 @@ import {
   SpamIcon,
   StarIcon,
   ArchiveIcon,
-} from '../../../components/ui/icons/folder-icons';
+} from '@/components/ui/icons/folder-icons';
 
 interface FolderIconProps {
   folderName: string;

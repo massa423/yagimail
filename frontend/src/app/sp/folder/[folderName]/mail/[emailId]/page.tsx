@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header, BottomNavigation } from '../../../../../../components';
-import { decodeRouterPath } from '../../../../../../utils/navigation';
-import { MailDetail } from '../../../../../../features/emails';
-import { useEmailContext } from '../../../../../../contexts';
+import { Header, BottomNavigation } from '@/components';
+import { decodeRouterPath } from '@/utils/navigation';
+import { MailDetail } from '@/features/emails';
+import { useEmailContext } from '@/contexts';
 
 interface MailDetailPageProps {
   params: {

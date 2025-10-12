@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header, BottomNavigation } from '../../../../components';
-import { MailList } from '../../../../features/emails';
-import { decodeRouterPath } from '../../../../utils/navigation';
-import { useEmailContext } from '../../../../contexts';
+import { Header, BottomNavigation } from '@/components';
+import { MailList } from '@/features/emails';
+import { decodeRouterPath } from '@/utils/navigation';
+import { useEmailContext } from '@/contexts';
 
 interface FolderPageProps {
   params: {

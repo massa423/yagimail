@@ -1,4 +1,3 @@
 // Re-export external libraries with custom configurations
-export * from './react';
-export * from './data/emails';
-export * from './data/folders';
+export * from '@/lib/data/emails';
+export * from '@/lib/data/folders';

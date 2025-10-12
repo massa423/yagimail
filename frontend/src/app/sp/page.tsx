@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header, BottomNavigation } from '../../components';
-import { FolderList } from '../../features/folders';
-import { folders } from '../../lib/data/folders';
-import { generateFolderPath } from '../../utils/navigation';
+import { Header, BottomNavigation } from '@/components';
+import { FolderList } from '@/features/folders';
+import { folders } from '@/lib/data/folders';
+import { generateFolderPath } from '@/utils/navigation';
 
 export default function SpMailPage() {
   const router = useRouter();

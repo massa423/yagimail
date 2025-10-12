@@ -3,7 +3,7 @@ import {
   SearchIcon,
   ComposeIcon,
   SettingsIcon,
-} from './icons/navigation-icons';
+} from '@/components/ui/icons/navigation-icons';
 
 interface NavItem {
   id: string;

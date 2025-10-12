@@ -1,2 +1,2 @@
-export * from './use-navigation';
-export * from './use-email-state';
+export * from '@/hooks/use-navigation';
+export * from '@/hooks/use-email-state';

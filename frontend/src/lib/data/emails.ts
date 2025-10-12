@@ -1,4 +1,4 @@
-import { type MailItem } from '../../types/mail';
+import { type MailItem } from '@/types/mail';
 
 export type { MailItem };
 
