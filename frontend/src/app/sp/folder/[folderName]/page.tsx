@@ -7,11 +7,11 @@ import { MailList } from '@/features/emails';
 import { decodeRouterPath } from '@/utils/navigation';
 import { useEmailContext } from '@/contexts';
 
-interface FolderPageProps {
+type FolderPageProps = {
   params: {
     folderName: string;
   };
-}
+};
 
 export default function FolderPage({ params }: FolderPageProps) {
   const router = useRouter();

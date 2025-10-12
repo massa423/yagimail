@@ -1,10 +1,10 @@
 import FolderItem from '@/features/folders/components/folder-item';
 import { type MailFolder } from '@/lib/data/folders';
 
-interface FolderListProps {
+type FolderListProps = {
   folders: MailFolder[];
   onFolderClick?: (folderId: string) => void;
-}
+};
 
 export default function FolderList({
   folders,

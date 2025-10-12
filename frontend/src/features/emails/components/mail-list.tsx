@@ -1,11 +1,11 @@
 import MailItem from '@/features/emails/components/mail-item';
 import { type MailItem as MailItemType } from '@/lib/data/emails';
 
-interface MailListProps {
+type MailListProps = {
   emails: MailItemType[];
   onMailClick?: (emailId: string) => void;
   onStarClick?: (emailId: string) => void;
-}
+};
 
 export default function MailList({
   emails,

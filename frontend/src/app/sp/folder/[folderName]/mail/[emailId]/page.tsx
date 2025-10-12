@@ -7,12 +7,12 @@ import { decodeRouterPath } from '@/utils/navigation';
 import { MailDetail } from '@/features/emails';
 import { useEmailContext } from '@/contexts';
 
-interface MailDetailPageProps {
+type MailDetailPageProps = {
   params: {
     folderName: string;
     emailId: string;
   };
-}
+};
 
 export default function MailDetailPage({ params }: MailDetailPageProps) {
   const router = useRouter();

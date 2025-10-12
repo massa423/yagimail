@@ -4,7 +4,7 @@ import {
   StarOutlineIcon,
 } from '@/components/ui/icons/mail-icons';
 
-interface MailItemProps {
+type MailItemProps = {
   mail: {
     id: string;
     displayName: string;
@@ -17,7 +17,7 @@ interface MailItemProps {
   onClick?: () => void;
   onStarClick?: () => void;
   isLast?: boolean;
-}
+};
 
 export default function MailItem({
   mail,

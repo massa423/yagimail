@@ -5,17 +5,17 @@ import {
   SettingsIcon,
 } from '@/components/ui/icons/navigation-icons';
 
-interface NavItem {
+type NavItem = {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   active?: boolean;
-}
+};
 
-interface BottomNavigationProps {
+type BottomNavigationProps = {
   activeItem?: string;
   onItemClick?: (itemId: string) => void;
-}
+};
 
 export default function BottomNavigation({
   activeItem,

@@ -9,17 +9,17 @@ import {
 } from 'react';
 import { emails as initialEmails, type MailItem } from '@/lib/data/emails';
 
-interface EmailContextType {
+type EmailContextType = {
   emails: MailItem[];
   toggleStar: (emailId: string) => void;
   getEmailById: (emailId: string) => MailItem | undefined;
-}
+};
 
 const EmailContext = createContext<EmailContextType | undefined>(undefined);
 
-interface EmailProviderProps {
+type EmailProviderProps = {
   children: ReactNode;
-}
+};
 
 export const EmailProvider = ({ children }: EmailProviderProps) => {
   const [emails, setEmails] = useState<MailItem[]>(initialEmails);

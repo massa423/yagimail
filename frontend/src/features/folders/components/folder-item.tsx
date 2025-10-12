@@ -1,6 +1,6 @@
 import FolderIconMap from '@/features/folders/components/folder-icon-map';
 
-interface FolderItemProps {
+type FolderItemProps = {
   folder: {
     id: string;
     name: string;
@@ -9,7 +9,7 @@ interface FolderItemProps {
   };
   onClick?: () => void;
   isLast?: boolean;
-}
+};
 
 export default function FolderItem({
   folder,

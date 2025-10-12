@@ -1,4 +1,4 @@
-export interface MailItem {
+export type MailItem = {
   id: string;
   displayName: string;
   subject: string;
@@ -6,11 +6,11 @@ export interface MailItem {
   isStarred: boolean;
   isRead: boolean;
   senderIcon: string;
-}
+};
 
-export interface MailFolder {
+export type MailFolder = {
   id: string;
   name: string;
   unreadCount: number;
   icon: string;
-}
+};

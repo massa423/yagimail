@@ -1,7 +1,7 @@
-interface IconProps {
+type IconProps = {
   className?: string;
   size?: number;
-}
+};
 
 export const UserIcon = ({ className = 'w-8 h-8', size }: IconProps) => (
   <svg

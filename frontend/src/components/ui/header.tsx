@@ -1,11 +1,11 @@
 import { BackIcon } from '@/components/ui/icons/navigation-icons';
 
-interface HeaderProps {
+type HeaderProps = {
   title: string;
   showBackButton?: boolean;
   onBackClick?: () => void;
   rightAction?: React.ReactNode;
-}
+};
 
 export default function Header({
   title,

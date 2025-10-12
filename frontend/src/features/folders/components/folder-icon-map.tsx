@@ -8,10 +8,10 @@ import {
   ArchiveIcon,
 } from '@/components/ui/icons/folder-icons';
 
-interface FolderIconProps {
+type FolderIconProps = {
   folderName: string;
   className?: string;
-}
+};
 
 export default function FolderIconMap({
   folderName,

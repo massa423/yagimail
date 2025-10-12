@@ -5,13 +5,13 @@ import {
 } from '@/components/ui/icons/mail-icons';
 import { type MailItem } from '@/lib/data/emails';
 
-interface MailDetailProps {
+type MailDetailProps = {
   email: MailItem & { content?: string };
   onReplyClick?: () => void;
   onForwardClick?: () => void;
   onDeleteClick?: () => void;
   onStarToggle?: () => void;
-}
+};
 
 export default function MailDetail({
   email,
