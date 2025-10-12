@@ -12,7 +12,7 @@ export default function SpMailPage() {
   const [activeNavItem, setActiveNavItem] = useState('home');
 
   const handleFolderClick = (folderId: string) => {
-    const folder = folders.find(f => f.id === folderId);
+    const folder = folders.find((f) => f.id === folderId);
     if (folder) {
       router.push(generateFolderPath(folder.name));
     }
@@ -29,12 +29,9 @@ export default function SpMailPage() {
     <div className="min-h-screen bg-gray-50">
       <Header title="Yagimail" />
 
-      <FolderList 
-        folders={folders}
-        onFolderClick={handleFolderClick}
-      />
+      <FolderList folders={folders} onFolderClick={handleFolderClick} />
 
-      <BottomNavigation 
+      <BottomNavigation
         activeItem={activeNavItem}
         onItemClick={handleNavClick}
       />

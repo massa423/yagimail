@@ -1,4 +1,8 @@
-import { UserIcon, StarFilledIcon, StarOutlineIcon } from '../../../components/ui/icons/mail-icons';
+import {
+  UserIcon,
+  StarFilledIcon,
+  StarOutlineIcon,
+} from '../../../components/ui/icons/mail-icons';
 import { type MailItem } from '../../../lib/data/emails';
 
 interface MailDetailProps {
@@ -9,12 +13,12 @@ interface MailDetailProps {
   onStarToggle?: () => void;
 }
 
-export default function MailDetail({ 
-  email, 
-  onReplyClick, 
-  onForwardClick, 
-  onDeleteClick, 
-  onStarToggle 
+export default function MailDetail({
+  email,
+  onReplyClick,
+  onForwardClick,
+  onDeleteClick,
+  onStarToggle,
 }: MailDetailProps) {
   return (
     <div className="flex-1 bg-white">
@@ -26,7 +30,9 @@ export default function MailDetail({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-lg font-semibold text-gray-900">{email.displayName}</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {email.displayName}
+              </h2>
               <button onClick={onStarToggle} className="p-1">
                 {email.isStarred ? (
                   <StarFilledIcon className="w-5 h-5 text-yellow-500" />
@@ -35,19 +41,23 @@ export default function MailDetail({
                 )}
               </button>
             </div>
-            <p className="text-sm text-gray-600 mb-2">送信者: {email.displayName}</p>
+            <p className="text-sm text-gray-600 mb-2">
+              送信者: {email.displayName}
+            </p>
             <p className="text-sm text-gray-500">{email.receivedDate}</p>
           </div>
         </div>
-        
-        <h1 className="text-xl font-bold text-gray-900 mb-4">{email.subject}</h1>
+
+        <h1 className="text-xl font-bold text-gray-900 mb-4">
+          {email.subject}
+        </h1>
       </div>
 
       {/* Email Content */}
       <div className="p-4">
         <div className="prose prose-sm max-w-none">
           {email.content ? (
-            <div 
+            <div
               className="text-gray-700 leading-relaxed whitespace-pre-wrap"
               dangerouslySetInnerHTML={{ __html: email.content }}
             />
@@ -57,7 +67,8 @@ export default function MailDetail({
               {'\n\n'}
               お疲れ様です。{email.displayName}です。
               {'\n\n'}
-              {email.subject}の件でご連絡いたします。詳細については添付資料をご確認ください。
+              {email.subject}
+              の件でご連絡いたします。詳細については添付資料をご確認ください。
               {'\n\n'}
               何かご質問がございましたら、お気軽にお声がけください。
               {'\n\n'}

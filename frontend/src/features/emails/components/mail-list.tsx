@@ -7,7 +7,11 @@ interface MailListProps {
   onStarClick?: (emailId: string) => void;
 }
 
-export default function MailList({ emails, onMailClick, onStarClick }: MailListProps) {
+export default function MailList({
+  emails,
+  onMailClick,
+  onStarClick,
+}: MailListProps) {
   if (emails.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">

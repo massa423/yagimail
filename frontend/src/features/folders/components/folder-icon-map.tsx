@@ -1,11 +1,11 @@
-import { 
-  InboxIcon, 
-  SentIcon, 
-  DraftIcon, 
-  TrashIcon, 
-  SpamIcon, 
-  StarIcon, 
-  ArchiveIcon 
+import {
+  InboxIcon,
+  SentIcon,
+  DraftIcon,
+  TrashIcon,
+  SpamIcon,
+  StarIcon,
+  ArchiveIcon,
 } from '../../../components/ui/icons/folder-icons';
 
 interface FolderIconProps {
@@ -13,7 +13,10 @@ interface FolderIconProps {
   className?: string;
 }
 
-export default function FolderIconMap({ folderName, className = "w-5 h-5 text-gray-600" }: FolderIconProps) {
+export default function FolderIconMap({
+  folderName,
+  className = 'w-5 h-5 text-gray-600',
+}: FolderIconProps) {
   const getIcon = () => {
     switch (folderName) {
       case '受信トレイ':

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Header, BottomNavigation } from "../../../../../../components";
-import { emails } from "../../../../../../lib/data/emails";
-import { decodeRouterPath } from "../../../../../../utils/navigation";
-import { MailDetail } from "../../../../../../features/emails";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Header, BottomNavigation } from '../../../../../../components';
+import { decodeRouterPath } from '../../../../../../utils/navigation';
+import { MailDetail } from '../../../../../../features/emails';
+import { useEmailContext } from '../../../../../../contexts';
 
 interface MailDetailPageProps {
   params: {
@@ -18,10 +18,10 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
   const router = useRouter();
   const folderName = decodeRouterPath(params.folderName);
   const emailId = params.emailId;
-  const [activeNavItem, setActiveNavItem] = useState("home");
+  const [activeNavItem, setActiveNavItem] = useState('home');
 
-  // Find the specific email by ID
-  const email = emails.find(e => e.id === emailId);
+  const { getEmailById, toggleStar } = useEmailContext();
+  const email = getEmailById(emailId);
 
   if (!email) {
     return (
@@ -37,25 +37,26 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
 
   const handleNavClick = (itemId: string) => {
     setActiveNavItem(itemId);
-    if (itemId === "home") {
-      router.push("/sp");
+    if (itemId === 'home') {
+      router.push('/sp');
     }
   };
 
   const handleReplyClick = () => {
-    console.log("Reply clicked for email:", emailId);
+    console.log('Reply clicked for email:', emailId);
   };
 
   const handleForwardClick = () => {
-    console.log("Forward clicked for email:", emailId);
+    console.log('Forward clicked for email:', emailId);
   };
 
   const handleDeleteClick = () => {
-    console.log("Delete clicked for email:", emailId);
+    console.log('Delete clicked for email:', emailId);
   };
 
   const handleStarToggle = () => {
-    console.log("Star toggled for email:", emailId);
+    toggleStar(emailId);
+    console.log('Star toggled for email:', emailId);
   };
 
   return (

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Header, BottomNavigation } from "../../../../components";
-import { MailList } from "../../../../features/emails";
-import { emails, type MailItem } from "../../../../lib/data/emails";
-import { decodeRouterPath } from "../../../../utils/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Header, BottomNavigation } from '../../../../components';
+import { MailList } from '../../../../features/emails';
+import { decodeRouterPath } from '../../../../utils/navigation';
+import { useEmailContext } from '../../../../contexts';
 
 interface FolderPageProps {
   params: {
@@ -16,18 +16,18 @@ interface FolderPageProps {
 export default function FolderPage({ params }: FolderPageProps) {
   const router = useRouter();
   const folderName = decodeRouterPath(params.folderName);
-  const [activeNavItem, setActiveNavItem] = useState("home");
+  const [activeNavItem, setActiveNavItem] = useState('home');
 
-  const [emailList] = useState<MailItem[]>(emails);
+  const { emails: emailList, toggleStar } = useEmailContext();
 
   const handleBackClick = () => {
-    router.push("/sp");
+    router.push('/sp');
   };
 
   const handleNavClick = (itemId: string) => {
     setActiveNavItem(itemId);
-    if (itemId === "home") {
-      router.push("/sp");
+    if (itemId === 'home') {
+      router.push('/sp');
     }
   };
 
@@ -36,7 +36,8 @@ export default function FolderPage({ params }: FolderPageProps) {
   };
 
   const handleStarClick = (emailId: string) => {
-    console.log("Star clicked:", emailId);
+    toggleStar(emailId);
+    console.log('Star clicked:', emailId);
   };
 
   return (

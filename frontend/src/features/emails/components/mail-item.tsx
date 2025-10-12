@@ -1,4 +1,8 @@
-import { UserIcon, StarFilledIcon, StarOutlineIcon } from '../../../components/ui/icons/mail-icons';
+import {
+  UserIcon,
+  StarFilledIcon,
+  StarOutlineIcon,
+} from '../../../components/ui/icons/mail-icons';
 
 interface MailItemProps {
   mail: {
@@ -15,10 +19,15 @@ interface MailItemProps {
   isLast?: boolean;
 }
 
-export default function MailItem({ mail, onClick, onStarClick, isLast }: MailItemProps) {
+export default function MailItem({
+  mail,
+  onClick,
+  onStarClick,
+  isLast,
+}: MailItemProps) {
   return (
     <div>
-      <div 
+      <div
         className="flex items-start p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
         onClick={onClick}
       >
@@ -27,27 +36,31 @@ export default function MailItem({ mail, onClick, onStarClick, isLast }: MailIte
             <UserIcon className="w-6 h-6 text-blue-600" />
           </div>
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between mb-1">
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <h3 className={`text-sm font-medium ${mail.isRead ? 'text-gray-700' : 'text-gray-900 font-bold'}`}>
+                <h3
+                  className={`text-sm font-medium ${mail.isRead ? 'text-gray-700' : 'text-gray-900 font-bold'}`}
+                >
                   {mail.displayName}
                 </h3>
                 <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
                   {mail.receivedDate}
                 </span>
               </div>
-              <p className={`text-sm mt-1 ${mail.isRead ? 'text-gray-600' : 'text-gray-900 font-semibold'}`}>
+              <p
+                className={`text-sm mt-1 ${mail.isRead ? 'text-gray-600' : 'text-gray-900 font-semibold'}`}
+              >
                 {mail.subject}
               </p>
             </div>
           </div>
         </div>
-        
+
         <div className="flex-shrink-0 ml-3">
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               onStarClick?.();

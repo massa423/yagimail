@@ -7,7 +7,7 @@ export const useNavigation = () => {
 
   const handleNavClick = (itemId: string) => {
     setActiveNavItem(itemId);
-    
+
     switch (itemId) {
       case 'home':
         router.push('/sp');
@@ -26,6 +26,6 @@ export const useNavigation = () => {
 
   return {
     activeNavItem,
-    handleNavClick
+    handleNavClick,
   };
 };

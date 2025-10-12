@@ -6,7 +6,10 @@ interface FolderListProps {
   onFolderClick?: (folderId: string) => void;
 }
 
-export default function FolderList({ folders, onFolderClick }: FolderListProps) {
+export default function FolderList({
+  folders,
+  onFolderClick,
+}: FolderListProps) {
   return (
     <div className="p-2">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">

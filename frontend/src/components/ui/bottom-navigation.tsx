@@ -1,4 +1,9 @@
-import { HomeIcon, SearchIcon, ComposeIcon, SettingsIcon } from './icons/navigation-icons';
+import {
+  HomeIcon,
+  SearchIcon,
+  ComposeIcon,
+  SettingsIcon,
+} from './icons/navigation-icons';
 
 interface NavItem {
   id: string;
@@ -12,7 +17,10 @@ interface BottomNavigationProps {
   onItemClick?: (itemId: string) => void;
 }
 
-export default function BottomNavigation({ activeItem, onItemClick }: BottomNavigationProps) {
+export default function BottomNavigation({
+  activeItem,
+  onItemClick,
+}: BottomNavigationProps) {
   const navItems: NavItem[] = [
     { id: 'home', label: 'ホーム', icon: HomeIcon },
     { id: 'search', label: '検索', icon: SearchIcon },
