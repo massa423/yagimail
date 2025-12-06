@@ -15,7 +15,7 @@ export default function Header({
   rightAction,
 }: HeaderProps) {
   return (
-    <header className="bg-blue-900 text-white sticky top-0 z-10">
+    <header className="bg-blue-800 text-white sticky top-0 z-10">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
           {showBackButton && (

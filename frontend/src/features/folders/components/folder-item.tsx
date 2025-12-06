@@ -26,7 +26,7 @@ export default async function FolderItem({ folder, isLast }: FolderItemProps) {
           </span>
         </div>
         {folder.unreadCount > 0 && (
-          <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+          <div className="bg-red-700 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
             {folder.unreadCount > 99 ? '99+' : folder.unreadCount}
           </div>
         )}
