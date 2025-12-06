@@ -4,6 +4,7 @@ import { Header, BottomNavigation } from '@/components';
 import { MailList } from '@/features/emails';
 import { decodeRouterPath } from '@/utils/navigation';
 import { useEmailContext } from '@/contexts';
+import { use } from 'react';
 
 type FolderPageProps = {
   params: {
@@ -11,8 +12,9 @@ type FolderPageProps = {
   };
 };
 
-export default function FolderPage({ params }: FolderPageProps) {
-  const folderName = decodeRouterPath(params.folderName);
+export default function FolderPage({ params }: {params: Promise<FolderPageProps['params']> }) {
+  const { folderName } = use(params);
+  const folderNameDecoded = decodeRouterPath(folderName);
   const { emails: emailList, toggleStar } = useEmailContext();
 
   const handleStarClick = (emailId: string) => {
@@ -22,11 +24,11 @@ export default function FolderPage({ params }: FolderPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header title={folderName} showBackButton={true} backPath="/sp" />
+      <Header title={folderNameDecoded} showBackButton={true} backPath="/sp" />
 
       <MailList
         emails={emailList}
-        folderName={folderName}
+        folderName={folderNameDecoded}
         onStarClick={handleStarClick}
       />
 

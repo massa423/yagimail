@@ -4,6 +4,7 @@ import { Header, BottomNavigation } from '@/components';
 import { decodeRouterPath } from '@/utils/navigation';
 import { MailDetail } from '@/features/emails';
 import { useEmailContext } from '@/contexts';
+import { use } from 'react';
 
 type MailDetailPageProps = {
   params: {
@@ -12,9 +13,9 @@ type MailDetailPageProps = {
   };
 };
 
-export default function MailDetailPage({ params }: MailDetailPageProps) {
-  const folderName = decodeRouterPath(params.folderName);
-  const emailId = params.emailId;
+export default function MailDetailPage({ params }: { params: Promise<MailDetailPageProps['params']> }) {
+  const { folderName, emailId } = use(params);
+  const folderNameDecoded = decodeRouterPath(folderName);
 
   const { getEmailById, toggleStar } = useEmailContext();
   const email = getEmailById(emailId);
@@ -49,7 +50,7 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
       <Header
         title={email.subject}
         showBackButton={true}
-        backPath={`/sp/folder/${encodeURIComponent(folderName)}`}
+        backPath={`/sp/folder/${encodeURIComponent(folderNameDecoded)}`}
       />
 
       <MailDetail
