@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Header, BottomNavigation } from '@/components';
 import { decodeRouterPath } from '@/utils/navigation';
 import { MailDetail } from '@/features/emails';
@@ -14,7 +13,6 @@ type MailDetailPageProps = {
 };
 
 export default function MailDetailPage({ params }: MailDetailPageProps) {
-  const router = useRouter();
   const folderName = decodeRouterPath(params.folderName);
   const emailId = params.emailId;
 
@@ -28,10 +26,6 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
       </div>
     );
   }
-
-  const handleBackClick = () => {
-    router.push(`/sp/folder/${encodeURIComponent(folderName)}`);
-  };
 
   const handleReplyClick = () => {
     console.log('Reply clicked for email:', emailId);
@@ -55,7 +49,7 @@ export default function MailDetailPage({ params }: MailDetailPageProps) {
       <Header
         title={email.subject}
         showBackButton={true}
-        onBackClick={handleBackClick}
+        backPath={`/sp/folder/${encodeURIComponent(folderName)}`}
       />
 
       <MailDetail

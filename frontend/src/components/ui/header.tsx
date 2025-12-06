@@ -1,16 +1,17 @@
 import { BackIcon } from '@/components/ui/icons/navigation-icons';
+import Link from 'next/link';
 
 type HeaderProps = {
   title: string;
   showBackButton?: boolean;
-  onBackClick?: () => void;
+  backPath?: string;
   rightAction?: React.ReactNode;
 };
 
 export default function Header({
   title,
   showBackButton,
-  onBackClick,
+  backPath,
   rightAction,
 }: HeaderProps) {
   return (
@@ -18,12 +19,12 @@ export default function Header({
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
           {showBackButton && (
-            <button
-              onClick={onBackClick}
+            <Link
+              href={backPath || '/'}
               className="mr-3 text-white hover:bg-blue-700 rounded-full p-1"
             >
               <BackIcon className="w-5 h-5" />
-            </button>
+            </Link>
           )}
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
