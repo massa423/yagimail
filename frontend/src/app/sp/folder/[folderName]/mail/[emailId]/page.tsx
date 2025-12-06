@@ -13,7 +13,11 @@ type MailDetailPageProps = {
   };
 };
 
-export default function MailDetailPage({ params }: { params: Promise<MailDetailPageProps['params']> }) {
+export default function MailDetailPage({
+  params,
+}: {
+  params: Promise<MailDetailPageProps['params']>;
+}) {
   const { folderName, emailId } = use(params);
   const folderNameDecoded = decodeRouterPath(folderName);
 

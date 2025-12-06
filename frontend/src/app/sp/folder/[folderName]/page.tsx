@@ -12,7 +12,11 @@ type FolderPageProps = {
   };
 };
 
-export default function FolderPage({ params }: {params: Promise<FolderPageProps['params']> }) {
+export default function FolderPage({
+  params,
+}: {
+  params: Promise<FolderPageProps['params']>;
+}) {
   const { folderName } = use(params);
   const folderNameDecoded = decodeRouterPath(folderName);
   const { emails: emailList, toggleStar } = useEmailContext();
