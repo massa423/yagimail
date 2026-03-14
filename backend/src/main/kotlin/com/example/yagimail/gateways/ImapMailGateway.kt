@@ -1,9 +1,13 @@
 package com.example.yagimail.gateways
 
 import com.example.yagimail.domain.gateway.MailGateway
+import com.example.yagimail.domain.model.MailDetail
 import com.example.yagimail.domain.model.MailItem
 import jakarta.mail.*
 import jakarta.mail.UIDFolder
+import jakarta.mail.internet.MimeMultipart
+import jakarta.mail.internet.MimeUtility
+import java.io.InputStream
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -81,6 +85,114 @@ class ImapMailGateway(
             logger.error("エラーが発生しました: ${e.message}", e)
             e.printStackTrace()
             emptyList()
+        }
+    }
+
+    override fun getMail(folderId: String, mailId: String): MailDetail? {
+        val properties = Properties().apply {
+            put("mail.store.protocol", protocol)
+            put("mail.${protocol}.host", host)
+            put("mail.${protocol}.port", port.toString())
+            put("mail.${protocol}.ssl.enable", "true")
+            put("mail.${protocol}.ssl.trust", "*")
+        }
+
+        val session = Session.getInstance(properties)
+        val store = session.getStore(protocol)
+
+        return try {
+            store.connect(host, username, password)
+
+            val folder = store.getFolder(folderId)
+            folder.open(Folder.READ_WRITE)
+
+            val message = if (folder is UIDFolder) {
+                folder.getMessageByUID(mailId.toLong())
+            } else {
+                null
+            }
+
+            if (message == null) {
+                folder.close(false)
+                store.close()
+                return null
+            }
+
+            val uid = if (folder is UIDFolder) folder.getUID(message) else mailId.toLong()
+            val detail = convertToMailDetail(message, uid, folder)
+
+            // 本文 fetch 後に既読化
+            message.setFlag(Flags.Flag.SEEN, true)
+
+            folder.close(false)
+            store.close()
+
+            detail
+        } catch (e: Exception) {
+            logger.error("メール取得中にエラーが発生しました: ${e.message}", e)
+            null
+        }
+    }
+
+    private fun convertToMailDetail(message: Message, uid: Long, folder: Folder): MailDetail {
+        val from = message.from?.firstOrNull()?.toString() ?: "Unknown"
+        val to = message.getRecipients(Message.RecipientType.TO)
+            ?.map { extractDisplayName(MimeUtility.decodeText(it.toString())) } ?: emptyList()
+        val cc = message.getRecipients(Message.RecipientType.CC)
+            ?.map { extractDisplayName(MimeUtility.decodeText(it.toString())) } ?: emptyList()
+
+        val rawSubject = message.subject ?: "(No Subject)"
+        val subject = try { MimeUtility.decodeText(rawSubject) } catch (e: Exception) { rawSubject }
+
+        val receivedDate = message.receivedDate?.let { dateFormat.format(it) } ?: ""
+        val flags = message.flags
+        val isStarred = flags.contains(Flags.Flag.FLAGGED)
+
+        val (bodyText, bodyHtml) = extractBody(message)
+
+        return MailDetail(
+            id = uid.toString(),
+            subject = subject,
+            from = extractDisplayName(MimeUtility.decodeText(from)),
+            to = to,
+            cc = cc,
+            receivedDate = receivedDate,
+            isStarred = isStarred,
+            isRead = true, // 取得後に既読化するため常に true
+            bodyText = bodyText,
+            bodyHtml = bodyHtml,
+        )
+    }
+
+    private fun extractBody(part: Part): Pair<String?, String?> {
+        return when {
+            part.isMimeType("text/plain") -> Pair(partContentAsString(part), null)
+            part.isMimeType("text/html") -> Pair(null, partContentAsString(part))
+            part.isMimeType("multipart/*") -> {
+                val mp = part.content as MimeMultipart
+                var text: String? = null
+                var html: String? = null
+                for (i in 0 until mp.count) {
+                    val (t, h) = extractBody(mp.getBodyPart(i))
+                    if (t != null) text = t
+                    if (h != null) html = h
+                }
+                Pair(text, html)
+            }
+            else -> Pair(null, null)
+        }
+    }
+
+    private fun partContentAsString(part: Part): String? {
+        return try {
+            when (val content = part.content) {
+                is String -> content
+                is InputStream -> content.bufferedReader().readText()
+                else -> null
+            }
+        } catch (e: Exception) {
+            logger.warn("本文の読み取りに失敗しました: ${e.message}")
+            null
         }
     }
 
