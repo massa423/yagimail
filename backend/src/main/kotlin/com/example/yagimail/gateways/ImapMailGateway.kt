@@ -21,7 +21,7 @@ class ImapMailGateway(
     private val logger = LoggerFactory.getLogger(ImapMailGateway::class.java)
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm")
 
-    override fun getMailList(): List<MailItem> {
+    override fun getMailList(folderId: String): List<MailItem> {
         val properties = Properties().apply {
             put("mail.store.protocol", protocol)
             put("mail.${protocol}.host", host)
@@ -36,7 +36,7 @@ class ImapMailGateway(
         return try {
             store.connect(host, username, password)
 
-            val inbox = store.getFolder("INBOX")
+            val inbox = store.getFolder(folderId)
             inbox.open(Folder.READ_ONLY)
 
             val messageCount = inbox.messageCount
