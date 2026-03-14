@@ -1,0 +1,255 @@
+openapi: 3.1.0
+info:
+  title: Yagimail API
+  version: 1.0.0
+  description: IMAP-based email client backend API
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+paths:
+  /api/v1/folders:
+    get:
+      summary: Get folder list
+      operationId: getFolders
+      tags:
+        - folders
+      responses:
+        "200":
+          description: Folder list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderListResponse"
+              example:
+                folders:
+                  - id: INBOX
+                    name: 受信トレイ
+                    type: system
+                    messagesTotal: 100
+                    messagesUnread: 15
+                  - id: "[Gmail]/Sent Mail"
+                    name: 送信済み
+                    type: system
+                    messagesTotal: 50
+                    messagesUnread: 0
+                  - id: MyFolder
+                    name: MyFolder
+                    type: user
+                    messagesTotal: 10
+                    messagesUnread: 2
+
+  /api/v1/folders/{folderId}/mails:
+    get:
+      summary: Get mail list in a folder
+      operationId: getMails
+      tags:
+        - mails
+      parameters:
+        - $ref: "#/components/parameters/folderId"
+      responses:
+        "200":
+          description: Mail list (latest 20 items)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MailItem"
+              example:
+                - id: "1"
+                  displayName: John Doe
+                  subject: Hello
+                  receivedDate: "2026-03-14T10:00:00Z"
+                  isStarred: false
+                  isRead: true
+                  senderIcon: J
+
+  /api/v1/folders/{folderId}/mails/{mailId}:
+    get:
+      summary: Get mail detail
+      operationId: getMailDetail
+      tags:
+        - mails
+      parameters:
+        - $ref: "#/components/parameters/folderId"
+        - name: mailId
+          in: path
+          required: true
+          description: Mail message ID
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Mail detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailDetail"
+        "404":
+          description: Mail not found
+
+components:
+  parameters:
+    folderId:
+      name: folderId
+      in: path
+      required: true
+      description: |
+        Folder ID. Use the `id` field returned by `GET /api/v1/folders`.
+        The value is the IMAP `fullName` (e.g. `INBOX`, `[Gmail]/Sent Mail`).
+        URL-encode special characters (e.g. `/`) on the client side.
+      schema:
+        type: string
+      example: INBOX
+
+  schemas:
+    FolderType:
+      type: string
+      enum:
+        - system
+        - user
+      description: |
+        - `system`: Built-in IMAP folder (INBOX, Sent, Drafts, Trash, Spam, Archive)
+        - `user`: User-created folder
+
+    FolderResponse:
+      type: object
+      required:
+        - id
+        - name
+        - type
+        - messagesTotal
+        - messagesUnread
+      properties:
+        id:
+          type: string
+          description: Folder ID (IMAP fullName)
+          example: INBOX
+        name:
+          type: string
+          description: Display name
+          example: 受信トレイ
+        type:
+          $ref: "#/components/schemas/FolderType"
+        messagesTotal:
+          type: integer
+          description: Total number of messages
+          example: 100
+        messagesUnread:
+          type: integer
+          description: Number of unread messages
+          example: 15
+
+    FolderListResponse:
+      type: object
+      required:
+        - folders
+      properties:
+        folders:
+          type: array
+          items:
+            $ref: "#/components/schemas/FolderResponse"
+          description: |
+            Sorted in this order: INBOX → Sent → Drafts → Trash → Spam → Archive → user folders
+
+    MailItem:
+      type: object
+      required:
+        - id
+        - displayName
+        - subject
+        - receivedDate
+        - isStarred
+        - isRead
+        - senderIcon
+      properties:
+        id:
+          type: string
+          description: Mail message ID
+          example: "42"
+        displayName:
+          type: string
+          description: Sender display name
+          example: John Doe
+        subject:
+          type: string
+          description: Mail subject
+          example: Hello
+        receivedDate:
+          type: string
+          description: Received date (ISO 8601)
+          example: "2026-03-14T10:00:00Z"
+        isStarred:
+          type: boolean
+          description: Whether the mail is starred
+          example: false
+        isRead:
+          type: boolean
+          description: Whether the mail has been read
+          example: true
+        senderIcon:
+          type: string
+          description: Single character used as sender icon (first letter of display name)
+          example: J
+
+    MailDetail:
+      type: object
+      required:
+        - id
+        - subject
+        - from
+        - to
+        - cc
+        - receivedDate
+        - isStarred
+        - isRead
+      properties:
+        id:
+          type: string
+          description: Mail message ID
+          example: "42"
+        subject:
+          type: string
+          description: Mail subject
+          example: Hello
+        from:
+          type: string
+          description: Sender address
+          example: sender@example.com
+        to:
+          type: array
+          items:
+            type: string
+          description: Recipient addresses
+          example:
+            - recipient@example.com
+        cc:
+          type: array
+          items:
+            type: string
+          description: CC addresses
+          example: []
+        receivedDate:
+          type: string
+          description: Received date (ISO 8601)
+          example: "2026-03-14T10:00:00Z"
+        isStarred:
+          type: boolean
+          description: Whether the mail is starred
+          example: false
+        isRead:
+          type: boolean
+          description: Whether the mail has been read
+          example: true
+        bodyText:
+          type: string
+          nullable: true
+          description: Plain text body
+          example: "Hello, this is the mail body."
+        bodyHtml:
+          type: string
+          nullable: true
+          description: HTML body
+          example: "<p>Hello, this is the mail body.</p>"
