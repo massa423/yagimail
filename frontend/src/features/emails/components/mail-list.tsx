@@ -1,6 +1,5 @@
 import MailItem from '@/features/emails/components/mail-item';
 import { type MailItem as MailItemType } from '@/lib/data/emails';
-import Link from 'next/link';
 
 type MailListProps = {
   emails: MailItemType[];
@@ -25,16 +24,13 @@ export default function MailList({
     <div className="p-2">
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         {emails.map((email, index) => (
-          <Link
-            href={`/sp/folder/${encodeURIComponent(folderName)}/mail/${email.id}`}
+          <MailItem
             key={email.id}
-          >
-            <MailItem
-              mail={email}
-              onStarClick={() => onStarClick?.(email.id)}
-              isLast={index === emails.length - 1}
-            />
-          </Link>
+            mail={email}
+            onStarClick={() => onStarClick?.(email.id)}
+            isLast={index === emails.length - 1}
+            href={`/sp/folder/${encodeURIComponent(folderName)}/mail/${email.id}`}
+          />
         ))}
       </div>
     </div>
