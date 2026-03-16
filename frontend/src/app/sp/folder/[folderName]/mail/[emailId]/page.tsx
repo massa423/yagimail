@@ -1,73 +1,41 @@
-'use client';
-
-import { Header, BottomNavigation } from '@/components';
-import { decodeRouterPath } from '@/utils/navigation';
-import { MailDetail } from '@/features/emails';
-import { useEmailContext } from '@/contexts';
-import { use } from 'react';
+import { MailDetailPageClient } from './mail-detail-page-client';
+import { type MailDetail } from '@/types/mail';
 
 type MailDetailPageProps = {
-  params: {
+  params: Promise<{
     folderName: string;
     emailId: string;
-  };
+  }>;
 };
 
-export default function MailDetailPage({
-  params,
-}: {
-  params: Promise<MailDetailPageProps['params']>;
-}) {
-  const { folderName, emailId } = use(params);
-  const folderNameDecoded = decodeRouterPath(folderName);
+async function getMailDetail(
+  folderId: string,
+  mailId: string,
+): Promise<MailDetail | null> {
+  const res = await fetch(
+    `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails/${encodeURIComponent(mailId)}`,
+    {
+      cache: 'no-store',
+    },
+  );
 
-  const { getEmailById, toggleStar } = useEmailContext();
-  const email = getEmailById(emailId);
-
-  if (!email) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-500">メールが見つかりません</p>
-      </div>
-    );
+  if (res.status === 404) {
+    return null;
   }
 
-  const handleReplyClick = () => {
-    console.log('Reply clicked for email:', emailId);
-  };
+  if (!res.ok) {
+    throw new Error('Failed to fetch mail detail');
+  }
 
-  const handleForwardClick = () => {
-    console.log('Forward clicked for email:', emailId);
-  };
+  return res.json();
+}
 
-  const handleDeleteClick = () => {
-    console.log('Delete clicked for email:', emailId);
-  };
-
-  const handleStarToggle = () => {
-    toggleStar(emailId);
-    console.log('Star toggled for email:', emailId);
-  };
+export default async function MailDetailPage({ params }: MailDetailPageProps) {
+  const { folderName, emailId } = await params;
+  const folderId = decodeURIComponent(folderName);
+  const email = await getMailDetail(folderId, emailId);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header
-        title={email.subject}
-        showBackButton={true}
-        backPath={`/sp/folder/${encodeURIComponent(folderNameDecoded)}`}
-      />
-
-      <MailDetail
-        email={email}
-        onReplyClick={handleReplyClick}
-        onForwardClick={handleForwardClick}
-        onDeleteClick={handleDeleteClick}
-        onStarToggle={handleStarToggle}
-      />
-
-      <BottomNavigation />
-
-      <div className="h-16"></div>
-    </div>
+    <MailDetailPageClient folderId={folderId} emailId={emailId} email={email} />
   );
 }

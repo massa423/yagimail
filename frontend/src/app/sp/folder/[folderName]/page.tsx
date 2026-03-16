@@ -1,44 +1,31 @@
-'use client';
-
-import { Header, BottomNavigation } from '@/components';
-import { MailList } from '@/features/emails';
-import { decodeRouterPath } from '@/utils/navigation';
-import { useEmailContext } from '@/contexts';
-import { use } from 'react';
+import { FolderPageClient } from './folder-page-client';
+import { type MailItem } from '@/types/mail';
 
 type FolderPageProps = {
-  params: {
+  params: Promise<{
     folderName: string;
-  };
+  }>;
 };
 
-export default function FolderPage({
-  params,
-}: {
-  params: Promise<FolderPageProps['params']>;
-}) {
-  const { folderName } = use(params);
-  const folderNameDecoded = decodeRouterPath(folderName);
-  const { emails: emailList, toggleStar } = useEmailContext();
-
-  const handleStarClick = (emailId: string) => {
-    toggleStar(emailId);
-    console.log('Star clicked:', emailId);
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header title={folderNameDecoded} showBackButton={true} backPath="/sp" />
-
-      <MailList
-        emails={emailList}
-        folderName={folderNameDecoded}
-        onStarClick={handleStarClick}
-      />
-
-      <BottomNavigation />
-
-      <div className="h-16"></div>
-    </div>
+async function getEmails(folderId: string): Promise<MailItem[]> {
+  const res = await fetch(
+    `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails`,
+    {
+      cache: 'no-store',
+    },
   );
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch emails');
+  }
+
+  return res.json();
+}
+
+export default async function FolderPage({ params }: FolderPageProps) {
+  const { folderName } = await params;
+  const folderId = decodeURIComponent(folderName);
+  const emails = await getEmails(folderId);
+
+  return <FolderPageClient folderId={folderId} initialEmails={emails} />;
 }

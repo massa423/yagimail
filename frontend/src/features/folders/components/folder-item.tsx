@@ -1,14 +1,9 @@
 import FolderIconMap from '@/features/folders/components/folder-icon-map';
 import Link from 'next/link';
-import { generateFolderPath } from '@/utils/navigation';
+import { type MailFolder } from '@/types/mail';
 
 type FolderItemProps = {
-  folder: {
-    id: string;
-    name: string;
-    unreadCount: number;
-    icon: string;
-  };
+  folder: MailFolder;
   isLast?: boolean;
 };
 
@@ -17,7 +12,7 @@ export default async function FolderItem({ folder, isLast }: FolderItemProps) {
     <div>
       <Link
         className="flex items-center justify-between p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
-        href={generateFolderPath(folder.name)}
+        href={`/sp/folder/${encodeURIComponent(folder.id)}`}
       >
         <div className="flex items-center space-x-3">
           <FolderIconMap folderName={folder.name} />
@@ -25,9 +20,9 @@ export default async function FolderItem({ folder, isLast }: FolderItemProps) {
             {folder.name}
           </span>
         </div>
-        {folder.unreadCount > 0 && (
+        {folder.messagesUnread > 0 && (
           <div className="bg-red-700 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
-            {folder.unreadCount > 99 ? '99+' : folder.unreadCount}
+            {folder.messagesUnread > 99 ? '99+' : folder.messagesUnread}
           </div>
         )}
       </Link>

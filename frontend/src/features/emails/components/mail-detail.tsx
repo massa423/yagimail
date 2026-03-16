@@ -3,10 +3,10 @@ import {
   StarFilledIcon,
   StarOutlineIcon,
 } from '@/components/ui/icons/mail-icons';
-import { type MailItem } from '@/lib/data/emails';
+import { type MailDetail } from '@/types/mail';
 
 type MailDetailProps = {
-  email: MailItem & { content?: string };
+  email: MailDetail;
   onReplyClick?: () => void;
   onForwardClick?: () => void;
   onDeleteClick?: () => void;
@@ -31,7 +31,7 @@ export default function MailDetail({
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-lg font-semibold text-gray-900">
-                {email.displayName}
+                {email.from}
               </h2>
               <button onClick={onStarToggle} className="p-1">
                 {email.isStarred ? (
@@ -41,9 +41,14 @@ export default function MailDetail({
                 )}
               </button>
             </div>
-            <p className="text-sm text-gray-600 mb-2">
-              送信者: {email.displayName}
+            <p className="text-sm text-gray-600 mb-1">
+              宛先: {email.to.join(', ')}
             </p>
+            {email.cc.length > 0 && (
+              <p className="text-sm text-gray-600 mb-1">
+                CC: {email.cc.join(', ')}
+              </p>
+            )}
             <p className="text-sm text-gray-500">{email.receivedDate}</p>
           </div>
         </div>
@@ -56,24 +61,17 @@ export default function MailDetail({
       {/* Email Content */}
       <div className="p-4">
         <div className="prose prose-sm max-w-none">
-          {email.content ? (
+          {email.bodyHtml ? (
             <div
-              className="text-gray-700 leading-relaxed whitespace-pre-wrap"
-              dangerouslySetInnerHTML={{ __html: email.content }}
+              className="text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: email.bodyHtml }}
             />
+          ) : email.bodyText ? (
+            <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {email.bodyText}
+            </div>
           ) : (
-            <p className="text-gray-700 leading-relaxed">
-              {email.subject}についてのメール内容がここに表示されます。
-              {'\n\n'}
-              お疲れ様です。{email.displayName}です。
-              {'\n\n'}
-              {email.subject}
-              の件でご連絡いたします。詳細については添付資料をご確認ください。
-              {'\n\n'}
-              何かご質問がございましたら、お気軽にお声がけください。
-              {'\n\n'}
-              よろしくお願いいたします。
-            </p>
+            <p className="text-gray-500">本文がありません</p>
           )}
         </div>
       </div>

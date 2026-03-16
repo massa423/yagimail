@@ -1,15 +1,15 @@
 import MailItem from '@/features/emails/components/mail-item';
-import { type MailItem as MailItemType } from '@/lib/data/emails';
+import { type MailItem as MailItemType } from '@/types/mail';
 
 type MailListProps = {
   emails: MailItemType[];
-  folderName: string;
+  folderId: string;
   onStarClick?: (emailId: string) => void;
 };
 
 export default function MailList({
   emails,
-  folderName,
+  folderId,
   onStarClick,
 }: MailListProps) {
   if (emails.length === 0) {
@@ -29,7 +29,7 @@ export default function MailList({
             mail={email}
             onStarClick={() => onStarClick?.(email.id)}
             isLast={index === emails.length - 1}
-            href={`/sp/folder/${encodeURIComponent(folderName)}/mail/${email.id}`}
+            href={`/sp/folder/${encodeURIComponent(folderId)}/mail/${email.id}`}
           />
         ))}
       </div>

@@ -1,3 +1,13 @@
+export type FolderType = 'system' | 'user';
+
+export type MailFolder = {
+  id: string;
+  name: string;
+  type: FolderType;
+  messagesTotal: number;
+  messagesUnread: number;
+};
+
 export type MailItem = {
   id: string;
   displayName: string;
@@ -8,9 +18,15 @@ export type MailItem = {
   senderIcon: string;
 };
 
-export type MailFolder = {
+export type MailDetail = {
   id: string;
-  name: string;
-  unreadCount: number;
-  icon: string;
+  subject: string;
+  from: string;
+  to: string[];
+  cc: string[];
+  receivedDate: string;
+  isStarred: boolean;
+  isRead: boolean;
+  bodyText: string | null;
+  bodyHtml: string | null;
 };
