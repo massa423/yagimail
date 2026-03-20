@@ -1,11 +1,16 @@
 {
   "permissions": {
     "allow": [
+      "Bash(cat:*)",
+      "Bash(tree:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(mkdir:*)",
-      "Bash(npm run lint)"
+      "Bash(pnpm:*)",
+      "Bash(cd:*)",
+      "Bash(./gradlew:*)",
+      "WebFetch(domain:developers.google.com)"
     ],
-    "deny": []
+    "deny": ["Bash(rm:*)"]
   }
 }
