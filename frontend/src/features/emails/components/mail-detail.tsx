@@ -4,6 +4,7 @@ import {
   StarOutlineIcon,
 } from '@/components/ui/icons/mail-icons';
 import { type MailDetail } from '@/types/mail';
+import { EmailHtmlRenderer } from './email-html-renderer';
 
 type MailDetailProps = {
   email: MailDetail;
@@ -62,10 +63,7 @@ export default function MailDetail({
       <div className="p-4">
         <div className="prose prose-sm max-w-none">
           {email.bodyHtml ? (
-            <div
-              className="text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: email.bodyHtml }}
-            />
+            <EmailHtmlRenderer html={email.bodyHtml} />
           ) : email.bodyText ? (
             <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
               {email.bodyText}
