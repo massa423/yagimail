@@ -88,6 +88,49 @@ class ImapMailGateway(
         }
     }
 
+    override fun toggleFlag(folderId: String, mailId: String): Boolean {
+        val properties = Properties().apply {
+            put("mail.store.protocol", protocol)
+            put("mail.${protocol}.host", host)
+            put("mail.${protocol}.port", port.toString())
+            put("mail.${protocol}.ssl.enable", "true")
+            put("mail.${protocol}.ssl.trust", "*")
+        }
+
+        val session = Session.getInstance(properties)
+        val store = session.getStore(protocol)
+
+        return try {
+            store.connect(host, username, password)
+
+            val folder = store.getFolder(folderId)
+            folder.open(Folder.READ_WRITE)
+
+            val message = if (folder is UIDFolder) {
+                folder.getMessageByUID(mailId.toLong())
+            } else {
+                null
+            } ?: run {
+                folder.close(false)
+                store.close()
+                throw NoSuchElementException("Mail not found: $mailId")
+            }
+
+            val isCurrentlyFlagged = message.flags.contains(Flags.Flag.FLAGGED)
+            message.setFlag(Flags.Flag.FLAGGED, !isCurrentlyFlagged)
+
+            folder.close(false)
+            store.close()
+
+            !isCurrentlyFlagged
+        } catch (e: NoSuchElementException) {
+            throw e
+        } catch (e: Exception) {
+            logger.error("フラグ切り替え中にエラーが発生しました: ${e.message}", e)
+            throw e
+        }
+    }
+
     override fun getMail(folderId: String, mailId: String): MailDetail? {
         val properties = Properties().apply {
             put("mail.store.protocol", protocol)

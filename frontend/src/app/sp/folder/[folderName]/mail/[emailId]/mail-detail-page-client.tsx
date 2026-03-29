@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useOptimistic, useTransition } from 'react';
 import { Header, BottomNavigation } from '@/components';
 import { MailDetail as MailDetailComponent } from '@/features/emails';
+import { toggleFlag } from '@/features/emails/actions/toggle-flag';
 import { type MailDetail } from '@/types/mail';
 
 type MailDetailPageClientProps = {
@@ -17,11 +18,18 @@ export function MailDetailPageClient({
   email: initialEmail,
 }: MailDetailPageClientProps) {
   const [email, setEmail] = useState(initialEmail);
+  const [optimisticEmail, toggleOptimisticStar] = useOptimistic<
+    MailDetail | null,
+    undefined
+  >(email, (state) =>
+    state ? { ...state, isStarred: !state.isStarred } : state,
+  );
+  const [, startTransition] = useTransition();
 
   if (!email) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-gray-500">メールが見つかりません</p>
+        <p className="text-muted-foreground">メールが見つかりません</p>
       </div>
     );
   }
@@ -39,7 +47,11 @@ export function MailDetailPageClient({
   };
 
   const handleStarToggle = () => {
-    setEmail((prev) => (prev ? { ...prev, isStarred: !prev.isStarred } : prev));
+    startTransition(async () => {
+      toggleOptimisticStar(undefined);
+      const { isStarred } = await toggleFlag(folderId, emailId);
+      setEmail((prev) => (prev ? { ...prev, isStarred } : prev));
+    });
   };
 
   return (
@@ -51,7 +63,7 @@ export function MailDetailPageClient({
       />
 
       <MailDetailComponent
-        email={email}
+        email={optimisticEmail ?? email}
         onReplyClick={handleReplyClick}
         onForwardClick={handleForwardClick}
         onDeleteClick={handleDeleteClick}

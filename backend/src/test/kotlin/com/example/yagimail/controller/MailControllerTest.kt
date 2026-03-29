@@ -2,6 +2,7 @@ package com.example.yagimail.controller
 
 import com.example.yagimail.domain.model.MailDetail
 import com.example.yagimail.usecase.GetMailUseCase
+import com.example.yagimail.usecase.ToggleFlagUseCase
 import org.junit.jupiter.api.Test
 import org.mockito.BDDMockito.given
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,6 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -20,6 +22,9 @@ class MailControllerTest {
 
     @MockitoBean
     private lateinit var getMailUseCase: GetMailUseCase
+
+    @MockitoBean
+    private lateinit var toggleFlagUseCase: ToggleFlagUseCase
 
     @Test
     fun `GET api v1 folders folderId mails mailId はメール詳細をJSON形式で返す`() {
@@ -54,6 +59,24 @@ class MailControllerTest {
         given(getMailUseCase.execute("INBOX", "99999")).willReturn(null)
 
         mockMvc.perform(get("/api/v1/folders/INBOX/mails/99999"))
+            .andExpect(status().isNotFound())
+    }
+
+    @Test
+    fun `PATCH api v1 folders folderId mails mailId flag はフラグを切り替えてisStarredを返す`() {
+        given(toggleFlagUseCase.execute("INBOX", "12345")).willReturn(true)
+
+        mockMvc.perform(patch("/api/v1/folders/INBOX/mails/12345/flag"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.isStarred").value(true))
+    }
+
+    @Test
+    fun `PATCH api v1 folders folderId mails mailId flag は存在しないmailIdに対して404を返す`() {
+        given(toggleFlagUseCase.execute("INBOX", "99999"))
+            .willThrow(NoSuchElementException("Mail not found: 99999"))
+
+        mockMvc.perform(patch("/api/v1/folders/INBOX/mails/99999/flag"))
             .andExpect(status().isNotFound())
     }
 }
