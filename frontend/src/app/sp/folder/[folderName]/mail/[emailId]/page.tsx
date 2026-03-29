@@ -15,7 +15,7 @@ async function getMailDetail(
   const res = await fetch(
     `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails/${encodeURIComponent(mailId)}`,
     {
-      cache: 'no-store',
+      next: { revalidate: 600 },
     },
   );
 

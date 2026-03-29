@@ -3,7 +3,7 @@ import { type MailFolder } from '@/types/mail';
 
 async function getFolders(): Promise<MailFolder[]> {
   const res = await fetch('http://localhost:8080/api/v1/folders', {
-    cache: 'no-store',
+    next: { revalidate: 600 },
   });
 
   if (!res.ok) {

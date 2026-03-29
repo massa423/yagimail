@@ -11,7 +11,7 @@ async function getEmails(folderId: string): Promise<MailItem[]> {
   const res = await fetch(
     `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails`,
     {
-      cache: 'no-store',
+      next: { revalidate: 600 },
     },
   );
 
