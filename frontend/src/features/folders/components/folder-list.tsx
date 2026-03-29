@@ -1,4 +1,5 @@
 import FolderItem from '@/features/folders/components/folder-item';
+import { Card } from '@/components/ui/card';
 import { type MailFolder } from '@/types/mail';
 
 async function getFolders(): Promise<MailFolder[]> {
@@ -18,8 +19,8 @@ export default async function FolderList() {
   const folders = await getFolders();
 
   return (
-    <div className="p-2">
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div className="p-3">
+      <Card className="gap-0 py-0">
         {folders.map((folder, index) => (
           <FolderItem
             key={folder.id}
@@ -27,7 +28,7 @@ export default async function FolderList() {
             isLast={index === folders.length - 1}
           />
         ))}
-      </div>
+      </Card>
     </div>
   );
 }

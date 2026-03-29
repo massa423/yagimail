@@ -3,6 +3,9 @@ import {
   StarFilledIcon,
   StarOutlineIcon,
 } from '@/components/ui/icons/mail-icons';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 
 type MailItemProps = {
@@ -28,50 +31,44 @@ export default function MailItem({
 }: MailItemProps) {
   const content = (
     <>
-      <div className="flex-shrink-0 mr-3">
-        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-          <UserIcon className="w-6 h-6 text-blue-600" />
-        </div>
-      </div>
+      <Avatar size="lg" className="mr-3 flex-shrink-0">
+        <AvatarFallback>
+          <UserIcon className="w-5 h-5 text-primary" />
+        </AvatarFallback>
+      </Avatar>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between mb-1">
-          <div className="flex-1">
-            <div className="flex items-center justify-between">
-              <h3
-                className={`text-sm font-medium ${mail.isRead ? 'text-gray-700' : 'text-gray-900 font-bold'}`}
-              >
-                {mail.displayName}
-              </h3>
-              <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                {mail.receivedDate}
-              </span>
-            </div>
-            <p
-              className={`text-sm mt-1 ${mail.isRead ? 'text-gray-600' : 'text-gray-900 font-semibold'}`}
-            >
-              {mail.subject}
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <h3
+            className={`text-sm truncate ${mail.isRead ? 'text-muted-foreground' : 'font-bold'}`}
+          >
+            {mail.displayName}
+          </h3>
+          <span className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+            {mail.receivedDate}
+          </span>
         </div>
+        <p className={`text-sm mt-1 truncate ${mail.isRead ? 'text-muted-foreground' : 'font-semibold'}`}>
+          {mail.subject}
+        </p>
       </div>
 
-      <div className="flex-shrink-0 ml-3">
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onStarClick?.();
-          }}
-          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-        >
-          {mail.isStarred ? (
-            <StarFilledIcon className="w-5 h-5 text-yellow-500" />
-          ) : (
-            <StarOutlineIcon className="w-5 h-5 text-gray-400" />
-          )}
-        </button>
-      </div>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        className="ml-2 flex-shrink-0"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onStarClick?.();
+        }}
+      >
+        {mail.isStarred ? (
+          <StarFilledIcon className="w-5 h-5 text-yellow-500" />
+        ) : (
+          <StarOutlineIcon className="w-5 h-5 text-muted-foreground" />
+        )}
+      </Button>
     </>
   );
 
@@ -79,11 +76,11 @@ export default function MailItem({
     <div>
       <Link
         href={href}
-        className="flex items-start p-4 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        className="flex items-center p-4 hover:bg-muted/50 active:bg-muted transition-colors"
       >
         {content}
       </Link>
-      {!isLast && <div className="border-b border-gray-100 ml-16" />}
+      {!isLast && <Separator className="ml-[68px]" />}
     </div>
   );
 }

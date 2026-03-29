@@ -6,6 +6,7 @@ import {
   ComposeIcon,
   SettingsIcon,
 } from '@/components/ui/icons/navigation-icons';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -13,7 +14,6 @@ type NavItem = {
   id: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  active?: boolean;
 };
 
 export default function BottomNavigation() {
@@ -34,21 +34,21 @@ export default function BottomNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
-      <div className="flex justify-around py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t">
+      <div className="flex justify-around py-1">
         {navItems.map((item) => {
           const IconComponent = item.icon;
+          const isActive = activeNavItem === item.id;
           return (
-            <button
+            <Button
               key={item.id}
-              className={`flex flex-col items-center py-2 px-4 ${
-                activeNavItem === item.id ? 'text-blue-600' : 'text-gray-400'
-              }`}
+              variant="ghost"
+              className={`flex flex-col h-auto gap-0.5 py-2 px-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`}
               onClick={() => handleNavClick(item.id)}
             >
-              <IconComponent className="w-5 h-5 mb-1" />
+              <IconComponent className="w-5 h-5" />
               <span className="text-xs">{item.label}</span>
-            </button>
+            </Button>
           );
         })}
       </div>

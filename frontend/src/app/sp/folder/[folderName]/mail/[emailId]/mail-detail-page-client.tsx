@@ -20,7 +20,7 @@ export function MailDetailPageClient({
 
   if (!email) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-gray-500">メールが見つかりません</p>
       </div>
     );
@@ -43,7 +43,7 @@ export function MailDetailPageClient({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header
         title={email.subject}
         showBackButton={true}

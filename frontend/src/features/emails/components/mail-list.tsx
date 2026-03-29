@@ -1,4 +1,5 @@
 import MailItem from '@/features/emails/components/mail-item';
+import { Card } from '@/components/ui/card';
 import { type MailItem as MailItemType } from '@/types/mail';
 
 type MailListProps = {
@@ -15,14 +16,14 @@ export default function MailList({
   if (emails.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500">メールがありません</p>
+        <p className="text-muted-foreground">メールがありません</p>
       </div>
     );
   }
 
   return (
-    <div className="p-2">
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div className="p-3">
+      <Card className="gap-0 py-0">
         {emails.map((email, index) => (
           <MailItem
             key={email.id}
@@ -32,7 +33,7 @@ export default function MailList({
             href={`/sp/folder/${encodeURIComponent(folderId)}/mail/${email.id}`}
           />
         ))}
-      </div>
+      </Card>
     </div>
   );
 }

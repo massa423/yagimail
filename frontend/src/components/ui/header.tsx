@@ -1,4 +1,5 @@
 import { BackIcon } from '@/components/ui/icons/navigation-icons';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 type HeaderProps = {
@@ -15,16 +16,15 @@ export default function Header({
   rightAction,
 }: HeaderProps) {
   return (
-    <header className="bg-blue-800 text-white sticky top-0 z-10">
+    <header className="bg-background sticky top-0 z-10 border-b">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center">
           {showBackButton && (
-            <Link
-              href={backPath || '/'}
-              className="mr-3 text-white hover:bg-blue-700 rounded-full p-1"
-            >
-              <BackIcon className="w-5 h-5" />
-            </Link>
+            <Button variant="ghost" size="icon-sm" asChild className="mr-2">
+              <Link href={backPath || '/'}>
+                <BackIcon className="w-5 h-5" />
+              </Link>
+            </Button>
           )}
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>

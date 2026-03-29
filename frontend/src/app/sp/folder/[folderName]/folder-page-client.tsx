@@ -27,7 +27,7 @@ export function FolderPageClient({
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Header title={folderId} showBackButton={true} backPath="/sp" />
 
       <MailList
