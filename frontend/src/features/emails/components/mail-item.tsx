@@ -48,7 +48,9 @@ export default function MailItem({
             {mail.receivedDate}
           </span>
         </div>
-        <p className={`text-sm mt-1 truncate ${mail.isRead ? 'text-muted-foreground' : 'font-semibold'}`}>
+        <p
+          className={`text-sm mt-1 truncate ${mail.isRead ? 'text-muted-foreground' : 'font-semibold'}`}
+        >
           {mail.subject}
         </p>
       </div>

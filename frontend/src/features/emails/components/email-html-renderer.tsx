@@ -38,17 +38,22 @@ export function EmailHtmlRenderer({ html }: EmailHtmlRendererProps) {
       if (!doc?.body) return;
 
       // Get the natural content width (scrollWidth captures overflow)
-      const contentWidth = Math.max(doc.body.scrollWidth, doc.documentElement.scrollWidth);
+      const contentWidth = Math.max(
+        doc.body.scrollWidth,
+        doc.documentElement.scrollWidth,
+      );
       const containerWidth = container.clientWidth;
 
       // Calculate scale factor if content overflows
-      const newScale = contentWidth > containerWidth
-        ? containerWidth / contentWidth
-        : 1;
+      const newScale =
+        contentWidth > containerWidth ? containerWidth / contentWidth : 1;
       setScale(newScale);
 
       // Get content height and adjust for scale
-      const contentHeight = Math.max(doc.body.scrollHeight, doc.documentElement.scrollHeight);
+      const contentHeight = Math.max(
+        doc.body.scrollHeight,
+        doc.documentElement.scrollHeight,
+      );
       setHeight(contentHeight * newScale);
     } catch {
       // cross-origin restriction — ignore

@@ -53,7 +53,9 @@ export default function MailDetail({
                 CC: {email.cc.join(', ')}
               </p>
             )}
-            <p className="text-xs text-muted-foreground">{email.receivedDate}</p>
+            <p className="text-xs text-muted-foreground">
+              {email.receivedDate}
+            </p>
           </div>
         </div>
 
