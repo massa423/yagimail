@@ -6,12 +6,16 @@ type MailListProps = {
   emails: MailItemType[];
   folderId: string;
   onStarClick?: (emailId: string) => void;
+  selectedIds?: Set<string>;
+  onSelect?: (emailId: string) => void;
 };
 
 export default function MailList({
   emails,
   folderId,
   onStarClick,
+  selectedIds,
+  onSelect,
 }: MailListProps) {
   if (emails.length === 0) {
     return (
@@ -31,6 +35,8 @@ export default function MailList({
             onStarClick={() => onStarClick?.(email.id)}
             isLast={index === emails.length - 1}
             href={`/sp/folder/${encodeURIComponent(folderId)}/mail/${email.id}`}
+            isSelected={selectedIds?.has(email.id) ?? false}
+            onSelect={() => onSelect?.(email.id)}
           />
         ))}
       </Card>

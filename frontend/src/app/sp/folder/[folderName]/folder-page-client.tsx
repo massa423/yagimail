@@ -1,9 +1,14 @@
 'use client';
 
-import { useEffect, startTransition } from 'react';
+import { useEffect, startTransition, useState } from 'react';
+import { toast } from 'sonner';
 import { Header, BottomNavigation } from '@/components';
 import { MailList } from '@/features/emails';
+import MailActionBar from '@/features/emails/components/mail-action-bar';
 import { toggleFlag } from '@/features/emails/actions/toggle-flag';
+import { markRead } from '@/features/emails/actions/mark-read';
+import { markUnread } from '@/features/emails/actions/mark-unread';
+import { moveToTrash } from '@/features/emails/actions/move-to-trash';
 import { useMailStarStore } from '@/features/emails/store/mail-star-store';
 import { type MailItem } from '@/types/mail';
 
@@ -17,10 +22,24 @@ export function FolderPageClient({
   initialEmails,
 }: FolderPageClientProps) {
   const { starredMap, initStars, toggleStar, setStar } = useMailStarStore();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [readMap, setReadMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     initStars(initialEmails);
   }, [initialEmails, initStars]);
+
+  const handleSelect = (emailId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(emailId)) {
+        next.delete(emailId);
+      } else {
+        next.add(emailId);
+      }
+      return next;
+    });
+  };
 
   const handleStarClick = (emailId: string) => {
     toggleStar(emailId);
@@ -30,9 +49,48 @@ export function FolderPageClient({
     });
   };
 
+  const selectedIdsArray = Array.from(selectedIds);
+
+  const handleMarkRead = () => {
+    setReadMap((prev) => {
+      const next = { ...prev };
+      selectedIdsArray.forEach((id) => (next[id] = true));
+      return next;
+    });
+    setSelectedIds(new Set());
+    startTransition(async () => {
+      await markRead(folderId, selectedIdsArray);
+    });
+  };
+
+  const handleMarkUnread = () => {
+    setReadMap((prev) => {
+      const next = { ...prev };
+      selectedIdsArray.forEach((id) => (next[id] = false));
+      return next;
+    });
+    setSelectedIds(new Set());
+    startTransition(async () => {
+      await markUnread(folderId, selectedIdsArray);
+    });
+  };
+
+  const handleMoveToTrash = () => {
+    setSelectedIds(new Set());
+    startTransition(async () => {
+      await moveToTrash(folderId, selectedIdsArray);
+    });
+  };
+
+  const handleReport = () => {
+    setSelectedIds(new Set());
+    toast('通報しました');
+  };
+
   const emails = initialEmails.map((email) => ({
     ...email,
     isStarred: starredMap[email.id] ?? email.isStarred,
+    isRead: readMap[email.id] ?? email.isRead,
   }));
 
   return (
@@ -43,9 +101,21 @@ export function FolderPageClient({
         emails={emails}
         folderId={folderId}
         onStarClick={handleStarClick}
+        selectedIds={selectedIds}
+        onSelect={handleSelect}
       />
 
-      <BottomNavigation />
+      {selectedIds.size === 0 && <BottomNavigation />}
+
+      {selectedIds.size > 0 && (
+        <MailActionBar
+          selectedCount={selectedIds.size}
+          onMarkRead={handleMarkRead}
+          onMarkUnread={handleMarkUnread}
+          onMoveToTrash={handleMoveToTrash}
+          onReport={handleReport}
+        />
+      )}
 
       <div className="h-16"></div>
     </div>
