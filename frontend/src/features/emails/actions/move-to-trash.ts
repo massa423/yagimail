@@ -5,11 +5,14 @@ export async function moveToTrash(
   mailIds: string[],
 ): Promise<void> {
   await Promise.all(
-    mailIds.map((mailId) =>
-      fetch(
-        `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails/${mailId}/trash`,
+    mailIds.map(async (mailId) => {
+      const res = await fetch(
+        `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails/${encodeURIComponent(mailId)}/trash`,
         { method: 'POST' },
-      ),
-    ),
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to move mail ${mailId} to trash: ${res.status}`);
+      }
+    }),
   );
 }

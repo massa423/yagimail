@@ -24,6 +24,7 @@ export function FolderPageClient({
   const { starredMap, initStars, toggleStar, setStar } = useMailStarStore();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [readMap, setReadMap] = useState<Record<string, boolean>>({});
+  const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     initStars(initialEmails);
@@ -76,9 +77,15 @@ export function FolderPageClient({
   };
 
   const handleMoveToTrash = () => {
+    const ids = [...selectedIdsArray];
     setSelectedIds(new Set());
     startTransition(async () => {
-      await moveToTrash(folderId, selectedIdsArray);
+      try {
+        await moveToTrash(folderId, ids);
+        setTrashedIds((prev) => new Set([...prev, ...ids]));
+      } catch {
+        toast.error('削除に失敗しました');
+      }
     });
   };
 
@@ -87,11 +94,13 @@ export function FolderPageClient({
     toast('通報しました');
   };
 
-  const emails = initialEmails.map((email) => ({
-    ...email,
-    isStarred: starredMap[email.id] ?? email.isStarred,
-    isRead: readMap[email.id] ?? email.isRead,
-  }));
+  const emails = initialEmails
+    .filter((email) => !trashedIds.has(email.id))
+    .map((email) => ({
+      ...email,
+      isStarred: starredMap[email.id] ?? email.isStarred,
+      isRead: readMap[email.id] ?? email.isRead,
+    }));
 
   return (
     <div className="min-h-screen bg-background">

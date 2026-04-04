@@ -20,7 +20,8 @@ class ImapMailGateway(
     @Value($$"${mail.imap.port}") private val port: Int,
     @Value($$"${mail.imap.username}") private val username: String,
     @Value($$"${mail.imap.password}") private val password: String,
-    @Value($$"${mail.imap.protocol}") private val protocol: String
+    @Value($$"${mail.imap.protocol}") private val protocol: String,
+    @Value($$"${mail.imap.trash}") private val trashFolderName: String,
 ) : MailGateway {
     private val logger = LoggerFactory.getLogger(ImapMailGateway::class.java)
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm")
@@ -267,6 +268,48 @@ class ImapMailGateway(
         )
 
         return mailItem
+    }
+
+    override fun moveToTrash(folderId: String, mailId: String) {
+        val properties = Properties().apply {
+            put("mail.store.protocol", protocol)
+            put("mail.${protocol}.host", host)
+            put("mail.${protocol}.port", port.toString())
+            put("mail.${protocol}.ssl.enable", "true")
+            put("mail.${protocol}.ssl.trust", "*")
+        }
+
+        val session = Session.getInstance(properties)
+        val store = session.getStore(protocol)
+
+        try {
+            store.connect(host, username, password)
+
+            val folder = store.getFolder(folderId)
+            folder.open(Folder.READ_WRITE)
+
+            val message = if (folder is UIDFolder) {
+                folder.getMessageByUID(mailId.toLong())
+            } else {
+                null
+            } ?: run {
+                folder.close(false)
+                store.close()
+                throw NoSuchElementException("Mail not found: $mailId")
+            }
+
+            val trashFolder = store.getFolder(trashFolderName)
+            folder.copyMessages(arrayOf(message), trashFolder)
+            message.setFlag(Flags.Flag.DELETED, true)
+
+            folder.close(true) // expunge して完全削除
+            store.close()
+        } catch (e: NoSuchElementException) {
+            throw e
+        } catch (e: Exception) {
+            logger.error("ゴミ箱への移動中にエラーが発生しました: ${e.message}", e)
+            throw e
+        }
     }
 
     private fun extractDisplayName(from: String): String {

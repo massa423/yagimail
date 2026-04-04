@@ -7,4 +7,5 @@ interface MailGateway {
     fun getMailList(folderId: String): List<MailItem>
     fun getMail(folderId: String, mailId: String): MailDetail?
     fun toggleFlag(folderId: String, mailId: String): Boolean
+    fun moveToTrash(folderId: String, mailId: String)
 }
