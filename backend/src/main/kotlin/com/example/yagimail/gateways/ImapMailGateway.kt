@@ -270,7 +270,7 @@ class ImapMailGateway(
         return mailItem
     }
 
-    override fun moveToTrash(folderId: String, mailId: String) {
+    override fun moveToTrash(folderId: String, mailIds: List<String>) {
         val properties = Properties().apply {
             put("mail.store.protocol", protocol)
             put("mail.${protocol}.host", host)
@@ -288,19 +288,19 @@ class ImapMailGateway(
             val folder = store.getFolder(folderId)
             folder.open(Folder.READ_WRITE)
 
-            val message = if (folder is UIDFolder) {
-                folder.getMessageByUID(mailId.toLong())
-            } else {
-                null
-            } ?: run {
+            val messages = mailIds.mapNotNull { mailId ->
+                (folder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+            }
+
+            if (messages.isEmpty()) {
                 folder.close(false)
                 store.close()
-                throw NoSuchElementException("Mail not found: $mailId")
+                throw NoSuchElementException("No mails found: $mailIds")
             }
 
             val trashFolder = store.getFolder(trashFolderName)
-            folder.copyMessages(arrayOf(message), trashFolder)
-            message.setFlag(Flags.Flag.DELETED, true)
+            folder.copyMessages(messages.toTypedArray(), trashFolder)
+            folder.setFlags(messages.toTypedArray(), Flags(Flags.Flag.DELETED), true)
 
             folder.close(true) // expunge して完全削除
             store.close()

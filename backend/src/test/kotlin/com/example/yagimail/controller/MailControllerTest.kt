@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -88,19 +89,25 @@ class MailControllerTest {
     }
 
     @Test
-    fun `POST api v1 folders folderId mails mailId trash はゴミ箱へ移動して204を返す`() {
-        willDoNothing().given(moveToTrashUseCase).execute("INBOX", "12345")
+    fun `POST api v1 folders folderId mails trash は複数メールをゴミ箱へ移動して204を返す`() {
+        willDoNothing().given(moveToTrashUseCase).execute("INBOX", listOf("12345", "67890"))
 
-        mockMvc.perform(post("/api/v1/folders/INBOX/mails/12345/trash"))
-            .andExpect(status().isNoContent())
+        mockMvc.perform(
+            post("/api/v1/folders/INBOX/mails/trash")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"mailIds":["12345","67890"]}""")
+        ).andExpect(status().isNoContent())
     }
 
     @Test
-    fun `POST api v1 folders folderId mails mailId trash は存在しないmailIdに対して404を返す`() {
-        willThrow(NoSuchElementException("Mail not found: 99999"))
-            .given(moveToTrashUseCase).execute("INBOX", "99999")
+    fun `POST api v1 folders folderId mails trash は存在しないmailIdに対して404を返す`() {
+        willThrow(NoSuchElementException("No mails found"))
+            .given(moveToTrashUseCase).execute("INBOX", listOf("99999"))
 
-        mockMvc.perform(post("/api/v1/folders/INBOX/mails/99999/trash"))
-            .andExpect(status().isNotFound())
+        mockMvc.perform(
+            post("/api/v1/folders/INBOX/mails/trash")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"mailIds":["99999"]}""")
+        ).andExpect(status().isNotFound())
     }
 }
