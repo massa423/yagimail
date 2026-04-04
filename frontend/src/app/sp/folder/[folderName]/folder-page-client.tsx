@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useOptimistic, useTransition } from 'react';
+import { useEffect, startTransition } from 'react';
 import { Header, BottomNavigation } from '@/components';
 import { MailList } from '@/features/emails';
 import { toggleFlag } from '@/features/emails/actions/toggle-flag';
+import { useMailStarStore } from '@/features/emails/store/mail-star-store';
 import { type MailItem } from '@/types/mail';
 
 type FolderPageClientProps = {
@@ -15,36 +16,31 @@ export function FolderPageClient({
   folderId,
   initialEmails,
 }: FolderPageClientProps) {
-  const [emails, setEmails] = useState<MailItem[]>(initialEmails);
-  const [optimisticEmails, toggleOptimisticStar] = useOptimistic(
-    emails,
-    (state, emailId: string) =>
-      state.map((email) =>
-        email.id === emailId
-          ? { ...email, isStarred: !email.isStarred }
-          : email,
-      ),
-  );
-  const [, startTransition] = useTransition();
+  const { starredMap, initStars, toggleStar, setStar } = useMailStarStore();
+
+  useEffect(() => {
+    initStars(initialEmails);
+  }, [initialEmails, initStars]);
 
   const handleStarClick = (emailId: string) => {
+    toggleStar(emailId);
     startTransition(async () => {
-      toggleOptimisticStar(emailId);
       const { isStarred } = await toggleFlag(folderId, emailId);
-      setEmails((prev) =>
-        prev.map((email) =>
-          email.id === emailId ? { ...email, isStarred } : email,
-        ),
-      );
+      setStar(emailId, isStarred);
     });
   };
+
+  const emails = initialEmails.map((email) => ({
+    ...email,
+    isStarred: starredMap[email.id] ?? email.isStarred,
+  }));
 
   return (
     <div className="min-h-screen bg-background">
       <Header title={folderId} showBackButton={true} backPath="/sp" />
 
       <MailList
-        emails={optimisticEmails}
+        emails={emails}
         folderId={folderId}
         onStarClick={handleStarClick}
       />

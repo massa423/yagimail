@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useOptimistic, useTransition } from 'react';
+import { useEffect, startTransition } from 'react';
 import { Header, BottomNavigation } from '@/components';
 import { MailDetail as MailDetailComponent } from '@/features/emails';
 import { toggleFlag } from '@/features/emails/actions/toggle-flag';
+import { useMailStarStore } from '@/features/emails/store/mail-star-store';
 import { type MailDetail } from '@/types/mail';
 
 type MailDetailPageClientProps = {
@@ -17,22 +18,24 @@ export function MailDetailPageClient({
   emailId,
   email: initialEmail,
 }: MailDetailPageClientProps) {
-  const [email, setEmail] = useState(initialEmail);
-  const [optimisticEmail, toggleOptimisticStar] = useOptimistic<
-    MailDetail | null,
-    undefined
-  >(email, (state) =>
-    state ? { ...state, isStarred: !state.isStarred } : state,
-  );
-  const [, startTransition] = useTransition();
+  const { starredMap, initStars, toggleStar, setStar } = useMailStarStore();
 
-  if (!email) {
+  useEffect(() => {
+    if (initialEmail) initStars([initialEmail]);
+  }, [initialEmail, initStars]);
+
+  if (!initialEmail) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">メールが見つかりません</p>
       </div>
     );
   }
+
+  const email = {
+    ...initialEmail,
+    isStarred: starredMap[emailId] ?? initialEmail.isStarred,
+  };
 
   const handleReplyClick = () => {
     console.log('Reply clicked for email:', emailId);
@@ -47,10 +50,10 @@ export function MailDetailPageClient({
   };
 
   const handleStarToggle = () => {
+    toggleStar(emailId);
     startTransition(async () => {
-      toggleOptimisticStar(undefined);
       const { isStarred } = await toggleFlag(folderId, emailId);
-      setEmail((prev) => (prev ? { ...prev, isStarred } : prev));
+      setStar(emailId, isStarred);
     });
   };
 
@@ -63,7 +66,7 @@ export function MailDetailPageClient({
       />
 
       <MailDetailComponent
-        email={optimisticEmail ?? email}
+        email={email}
         onReplyClick={handleReplyClick}
         onForwardClick={handleForwardClick}
         onDeleteClick={handleDeleteClick}
