@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(tree:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm:*)",
+      "Bash(cd:*)",
+      "Bash(./gradlew:*)",
+      "WebFetch(domain:developers.google.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // empty'); if [[ \"$FILE\" == *frontend/* ]]; then cd \"$CLAUDE_PROJECT_DIR/frontend\" && pnpm lint && pnpm typecheck && pnpm format:check; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
