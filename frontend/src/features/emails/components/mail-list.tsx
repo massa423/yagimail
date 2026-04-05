@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { Loader2 } from 'lucide-react';
 import MailItem from '@/features/emails/components/mail-item';
 import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { type MailItem as MailItemType } from '@/types/mail';
 
 type MailListProps = {
@@ -72,10 +72,8 @@ export default function MailList({
       </Card>
 
       {isLoadingMore && (
-        <div className="mt-3 space-y-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-lg" />
-          ))}
+        <div className="flex justify-center py-4">
+          <Loader2 className="animate-spin text-muted-foreground" size={24} />
         </div>
       )}
 
