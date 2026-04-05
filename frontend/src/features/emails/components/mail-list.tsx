@@ -1,5 +1,9 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import MailItem from '@/features/emails/components/mail-item';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { type MailItem as MailItemType } from '@/types/mail';
 
 type MailListProps = {
@@ -8,6 +12,9 @@ type MailListProps = {
   onStarClick?: (emailId: string) => void;
   selectedIds?: Set<string>;
   onSelect?: (emailId: string) => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
 };
 
 export default function MailList({
@@ -16,7 +23,30 @@ export default function MailList({
   onStarClick,
   selectedIds,
   onSelect,
+  onLoadMore,
+  hasMore,
+  isLoadingMore,
 }: MailListProps) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!onLoadMore || !hasMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          onLoadMore();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [onLoadMore, hasMore]);
+
   if (emails.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -40,6 +70,16 @@ export default function MailList({
           />
         ))}
       </Card>
+
+      {isLoadingMore && (
+        <div className="mt-3 space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-lg" />
+          ))}
+        </div>
+      )}
+
+      <div ref={sentinelRef} className="h-1" />
     </div>
   );
 }

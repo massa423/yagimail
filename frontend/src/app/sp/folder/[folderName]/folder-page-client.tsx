@@ -10,6 +10,7 @@ import { markRead } from '@/features/emails/actions/mark-read';
 import { markUnread } from '@/features/emails/actions/mark-unread';
 import { moveToTrash } from '@/features/emails/actions/move-to-trash';
 import { useMailStarStore } from '@/features/emails/store/mail-star-store';
+import { useInfiniteMail } from '@/hooks/use-infinite-mail';
 import { type MailItem } from '@/types/mail';
 
 type FolderPageClientProps = {
@@ -25,10 +26,11 @@ export function FolderPageClient({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [readMap, setReadMap] = useState<Record<string, boolean>>({});
   const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
+  const { emails: rawEmails, loadMore, hasMore, isLoadingMore } = useInfiniteMail(folderId, initialEmails);
 
   useEffect(() => {
-    initStars(initialEmails);
-  }, [initialEmails, initStars]);
+    initStars(rawEmails);
+  }, [rawEmails, initStars]);
 
   const handleSelect = (emailId: string) => {
     setSelectedIds((prev) => {
@@ -108,7 +110,7 @@ export function FolderPageClient({
     toast('通報しました');
   };
 
-  const emails = initialEmails
+  const emails = rawEmails
     .filter((email) => !trashedIds.has(email.id))
     .map((email) => ({
       ...email,
@@ -126,6 +128,9 @@ export function FolderPageClient({
         onStarClick={handleStarClick}
         selectedIds={selectedIds}
         onSelect={handleSelect}
+        onLoadMore={loadMore}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
       />
 
       {selectedIds.size === 0 && <BottomNavigation />}

@@ -16,10 +16,14 @@ class MailListController(
     fun mailList(
         @PathVariable folderId: String,
         @RequestParam(defaultValue = "100") limit: Int,
+        @RequestParam(defaultValue = "0") offset: Int,
     ): ResponseEntity<List<MailItem>> {
         if (limit < 1 || limit > 300) {
             return ResponseEntity.badRequest().build()
         }
-        return ResponseEntity.ok(getMailListUseCase.execute(folderId, limit))
+        if (offset < 0) {
+            return ResponseEntity.badRequest().build()
+        }
+        return ResponseEntity.ok(getMailListUseCase.execute(folderId, limit, offset))
     }
 }

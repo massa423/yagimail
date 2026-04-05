@@ -26,7 +26,7 @@ class ImapMailGateway(
     private val logger = LoggerFactory.getLogger(ImapMailGateway::class.java)
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm")
 
-    override fun getMailList(folderId: String, limit: Int): List<MailItem> {
+    override fun getMailList(folderId: String, limit: Int, offset: Int): List<MailItem> {
         val properties = Properties().apply {
             put("mail.store.protocol", protocol)
             put("mail.${protocol}.host", host)
@@ -46,13 +46,9 @@ class ImapMailGateway(
 
             val messageCount = inbox.messageCount
 
-            val fetchLimit = limit
-            val messages = if (messageCount > 0) {
-                val start = maxOf(1, messageCount - fetchLimit + 1)
-                inbox.getMessages(start, messageCount)
-            } else {
-                emptyArray()
-            }
+            val end = maxOf(0, messageCount - offset)
+            val start = maxOf(1, end - limit + 1)
+            val messages = if (end > 0) inbox.getMessages(start, end) else emptyArray()
 
             // FetchProfileで必要な情報を一括取得（高速化）
             if (messages.isNotEmpty()) {
