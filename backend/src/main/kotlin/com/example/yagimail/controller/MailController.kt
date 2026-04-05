@@ -2,6 +2,7 @@ package com.example.yagimail.controller
 
 import com.example.yagimail.domain.model.MailDetail
 import com.example.yagimail.usecase.GetMailUseCase
+import com.example.yagimail.usecase.MarkReadUseCase
 import com.example.yagimail.usecase.MoveToTrashUseCase
 import com.example.yagimail.usecase.ToggleFlagUseCase
 import org.springframework.http.ResponseEntity
@@ -14,12 +15,14 @@ import org.springframework.web.bind.annotation.RestController
 
 data class FlagResponse(val isStarred: Boolean)
 data class MoveToTrashRequest(val mailIds: List<String>)
+data class MarkReadRequest(val mailIds: List<String>, val isRead: Boolean)
 
 @RestController
 class MailController(
     private val getMailUseCase: GetMailUseCase,
     private val toggleFlagUseCase: ToggleFlagUseCase,
     private val moveToTrashUseCase: MoveToTrashUseCase,
+    private val markReadUseCase: MarkReadUseCase,
 ) {
     @GetMapping("/api/v1/folders/{folderId}/mails/{mailId}")
     fun mailDetail(
@@ -39,6 +42,19 @@ class MailController(
         return try {
             val isStarred = toggleFlagUseCase.execute(folderId, mailId)
             ResponseEntity.ok(FlagResponse(isStarred))
+        } catch (e: NoSuchElementException) {
+            ResponseEntity.notFound().build()
+        }
+    }
+
+    @PatchMapping("/api/v1/folders/{folderId}/mails/read")
+    fun markRead(
+        @PathVariable folderId: String,
+        @RequestBody request: MarkReadRequest,
+    ): ResponseEntity<Void> {
+        return try {
+            markReadUseCase.execute(folderId, request.mailIds, request.isRead)
+            ResponseEntity.noContent().build()
         } catch (e: NoSuchElementException) {
             ResponseEntity.notFound().build()
         }

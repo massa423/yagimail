@@ -312,6 +312,46 @@ class ImapMailGateway(
         }
     }
 
+    override fun markRead(folderId: String, mailIds: List<String>, isRead: Boolean) {
+        val properties = Properties().apply {
+            put("mail.store.protocol", protocol)
+            put("mail.${protocol}.host", host)
+            put("mail.${protocol}.port", port.toString())
+            put("mail.${protocol}.ssl.enable", "true")
+            put("mail.${protocol}.ssl.trust", "*")
+        }
+
+        val session = Session.getInstance(properties)
+        val store = session.getStore(protocol)
+
+        try {
+            store.connect(host, username, password)
+
+            val folder = store.getFolder(folderId)
+            folder.open(Folder.READ_WRITE)
+
+            val messages = mailIds.mapNotNull { mailId ->
+                (folder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+            }
+
+            if (messages.isEmpty()) {
+                folder.close(false)
+                store.close()
+                throw NoSuchElementException("No mails found: $mailIds")
+            }
+
+            folder.setFlags(messages.toTypedArray(), Flags(Flags.Flag.SEEN), isRead)
+
+            folder.close(false)
+            store.close()
+        } catch (e: NoSuchElementException) {
+            throw e
+        } catch (e: Exception) {
+            logger.error("既読状態の変更中にエラーが発生しました: ${e.message}", e)
+            throw e
+        }
+    }
+
     private fun extractDisplayName(from: String): String {
         // MIMEエンコードされた文字列をデコード
         val decoded = try {

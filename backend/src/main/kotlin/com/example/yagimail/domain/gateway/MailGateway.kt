@@ -8,4 +8,5 @@ interface MailGateway {
     fun getMail(folderId: String, mailId: String): MailDetail?
     fun toggleFlag(folderId: String, mailId: String): Boolean
     fun moveToTrash(folderId: String, mailIds: List<String>)
+    fun markRead(folderId: String, mailIds: List<String>, isRead: Boolean)
 }

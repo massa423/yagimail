@@ -53,26 +53,40 @@ export function FolderPageClient({
   const selectedIdsArray = Array.from(selectedIds);
 
   const handleMarkRead = () => {
+    const ids = [...selectedIdsArray];
+    const prevReadMap = { ...readMap };
     setReadMap((prev) => {
       const next = { ...prev };
-      selectedIdsArray.forEach((id) => (next[id] = true));
+      ids.forEach((id) => (next[id] = true));
       return next;
     });
     setSelectedIds(new Set());
     startTransition(async () => {
-      await markRead(folderId, selectedIdsArray);
+      try {
+        await markRead(folderId, ids);
+      } catch {
+        setReadMap(prevReadMap);
+        toast.error('既読への変更に失敗しました');
+      }
     });
   };
 
   const handleMarkUnread = () => {
+    const ids = [...selectedIdsArray];
+    const prevReadMap = { ...readMap };
     setReadMap((prev) => {
       const next = { ...prev };
-      selectedIdsArray.forEach((id) => (next[id] = false));
+      ids.forEach((id) => (next[id] = false));
       return next;
     });
     setSelectedIds(new Set());
     startTransition(async () => {
-      await markUnread(folderId, selectedIdsArray);
+      try {
+        await markUnread(folderId, ids);
+      } catch {
+        setReadMap(prevReadMap);
+        toast.error('未読への変更に失敗しました');
+      }
     });
   };
 

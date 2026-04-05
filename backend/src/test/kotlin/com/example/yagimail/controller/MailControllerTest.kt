@@ -2,6 +2,7 @@ package com.example.yagimail.controller
 
 import com.example.yagimail.domain.model.MailDetail
 import com.example.yagimail.usecase.GetMailUseCase
+import com.example.yagimail.usecase.MarkReadUseCase
 import com.example.yagimail.usecase.MoveToTrashUseCase
 import com.example.yagimail.usecase.ToggleFlagUseCase
 import org.junit.jupiter.api.Test
@@ -33,6 +34,9 @@ class MailControllerTest {
 
     @MockitoBean
     private lateinit var moveToTrashUseCase: MoveToTrashUseCase
+
+    @MockitoBean
+    private lateinit var markReadUseCase: MarkReadUseCase
 
     @Test
     fun `GET api v1 folders folderId mails mailId はメール詳細をJSON形式で返す`() {
@@ -86,6 +90,40 @@ class MailControllerTest {
 
         mockMvc.perform(patch("/api/v1/folders/INBOX/mails/99999/flag"))
             .andExpect(status().isNotFound())
+    }
+
+    @Test
+    fun `PATCH api v1 folders folderId mails read は複数メールを既読にして204を返す`() {
+        willDoNothing().given(markReadUseCase).execute("INBOX", listOf("12345", "67890"), true)
+
+        mockMvc.perform(
+            patch("/api/v1/folders/INBOX/mails/read")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"mailIds":["12345","67890"],"isRead":true}""")
+        ).andExpect(status().isNoContent())
+    }
+
+    @Test
+    fun `PATCH api v1 folders folderId mails read は複数メールを未読にして204を返す`() {
+        willDoNothing().given(markReadUseCase).execute("INBOX", listOf("12345", "67890"), false)
+
+        mockMvc.perform(
+            patch("/api/v1/folders/INBOX/mails/read")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"mailIds":["12345","67890"],"isRead":false}""")
+        ).andExpect(status().isNoContent())
+    }
+
+    @Test
+    fun `PATCH api v1 folders folderId mails read は存在しないmailIdに対して404を返す`() {
+        willThrow(NoSuchElementException("No mails found"))
+            .given(markReadUseCase).execute("INBOX", listOf("99999"), true)
+
+        mockMvc.perform(
+            patch("/api/v1/folders/INBOX/mails/read")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"mailIds":["99999"],"isRead":true}""")
+        ).andExpect(status().isNotFound())
     }
 
     @Test
