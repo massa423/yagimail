@@ -7,6 +7,7 @@ type HeaderProps = {
   showBackButton?: boolean;
   backPath?: string;
   rightAction?: React.ReactNode;
+  bottomContent?: React.ReactNode;
 };
 
 export default function Header({
@@ -14,6 +15,7 @@ export default function Header({
   showBackButton,
   backPath,
   rightAction,
+  bottomContent,
 }: HeaderProps) {
   return (
     <header className="bg-background sticky top-0 z-10 border-b">
@@ -30,6 +32,7 @@ export default function Header({
         </div>
         {rightAction && <div>{rightAction}</div>}
       </div>
+      {bottomContent}
     </header>
   );
 }

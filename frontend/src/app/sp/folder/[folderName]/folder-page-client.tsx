@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, startTransition, useState } from 'react';
+import { CheckSquare, Square, MinusSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header, BottomNavigation } from '@/components';
 import { MailList } from '@/features/emails';
@@ -105,6 +106,12 @@ export function FolderPageClient({
     });
   };
 
+  const handleSelectAll = () => {
+    const allIds = emails.map((e) => e.id);
+    const allLoadedSelected = allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
+    setSelectedIds(allLoadedSelected ? new Set() : new Set(allIds));
+  };
+
   const handleReport = () => {
     setSelectedIds(new Set());
     toast('通報しました');
@@ -118,9 +125,37 @@ export function FolderPageClient({
       isRead: readMap[email.id] ?? email.isRead,
     }));
 
+  const selectedCount = selectedIds.size;
+  const allSelected = selectedCount > 0 && selectedCount === emails.length;
+  const someSelected = selectedCount > 0 && selectedCount < emails.length;
+
+  const selectAllBar = (
+    <div className="border-t">
+      <button
+        className="flex items-center gap-2 px-4 py-2 w-full text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+        onClick={handleSelectAll}
+        aria-label={allSelected ? '全て選択解除' : '全て選択'}
+      >
+        {allSelected ? (
+          <CheckSquare className="w-5 h-5 text-primary" />
+        ) : someSelected ? (
+          <MinusSquare className="w-5 h-5 text-primary" />
+        ) : (
+          <Square className="w-5 h-5" />
+        )}
+        <span>{allSelected ? '全て選択解除' : '全て選択'}</span>
+      </button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      <Header title={folderId} showBackButton={true} backPath="/sp" />
+      <Header
+        title={selectedCount > 0 ? `${selectedCount}件選択中` : folderId}
+        showBackButton={true}
+        backPath="/sp"
+        bottomContent={selectAllBar}
+      />
 
       <MailList
         emails={emails}
