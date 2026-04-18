@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { userManager } from '@/contexts/auth-context';
+import { getUserManager } from '@/contexts/auth-context';
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -13,7 +13,8 @@ export default function AuthCallbackPage() {
     async function handleCallback() {
       try {
         // oidc-client-ts が URL の code + state を読み取り、Google とトークン交換を行う
-        const user = await userManager.signinRedirectCallback();
+        const mgr = getUserManager();
+        const user = await mgr.signinRedirectCallback();
 
         // Google ID トークンを Spring Boot に送信し、独自 JWT Cookie を発行してもらう
         const res = await fetch('/api/auth/login', {
@@ -28,7 +29,7 @@ export default function AuthCallbackPage() {
         }
 
         // Google トークンは不要になったので localStorage から削除（XSS 対策）
-        await userManager.removeUser();
+        await mgr.removeUser();
 
         if (!cancelled) {
           router.replace('/sp');
