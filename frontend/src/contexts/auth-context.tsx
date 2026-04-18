@@ -17,6 +17,10 @@ function createUserManager() {
     redirect_uri: process.env.NEXT_PUBLIC_OIDC_REDIRECT_URI!,
     response_type: 'code',
     scope: 'openid profile email',
+    // stateStore must be localStorage so the PKCE code_verifier survives
+    // the full-page redirect to Google and back (sessionStorage default is
+    // unreliable across page loads in some browsers / Next.js dev mode)
+    stateStore: new WebStorageStateStore({ store: window.localStorage }),
     userStore: new WebStorageStateStore({ store: window.localStorage }),
   });
 }
