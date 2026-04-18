@@ -1,10 +1,12 @@
 'use server';
 
+import { serverFetch } from '@/lib/server-fetch';
+
 export async function markUnread(
   folderId: string,
   mailIds: string[],
 ): Promise<void> {
-  const res = await fetch(
+  const res = await serverFetch(
     `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails/read`,
     {
       method: 'PATCH',
