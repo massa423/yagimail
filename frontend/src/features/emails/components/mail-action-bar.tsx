@@ -18,7 +18,10 @@ export default function MailActionBar({
 }: MailActionBarProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg">
-      <div className="flex items-center justify-around p-2" aria-label={`${selectedCount}件選択中`}>
+      <div
+        className="flex items-center justify-around p-2"
+        aria-label={`${selectedCount}件選択中`}
+      >
         <Button
           variant="ghost"
           size="icon-sm"

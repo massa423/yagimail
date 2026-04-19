@@ -27,7 +27,12 @@ export function FolderPageClient({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [readMap, setReadMap] = useState<Record<string, boolean>>({});
   const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
-  const { emails: rawEmails, loadMore, hasMore, isLoadingMore } = useInfiniteMail(folderId, initialEmails);
+  const {
+    emails: rawEmails,
+    loadMore,
+    hasMore,
+    isLoadingMore,
+  } = useInfiniteMail(folderId, initialEmails);
 
   useEffect(() => {
     initStars(rawEmails);
@@ -108,7 +113,8 @@ export function FolderPageClient({
 
   const handleSelectAll = () => {
     const allIds = emails.map((e) => e.id);
-    const allLoadedSelected = allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
+    const allLoadedSelected =
+      allIds.length > 0 && allIds.every((id) => selectedIds.has(id));
     setSelectedIds(allLoadedSelected ? new Set() : new Set(allIds));
   };
 
