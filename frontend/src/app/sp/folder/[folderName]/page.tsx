@@ -1,5 +1,6 @@
 import { FolderPageClient } from './folder-page-client';
 import { type MailItem } from '@/types/mail';
+import { serverFetch } from '@/lib/server-fetch';
 
 type FolderPageProps = {
   params: Promise<{
@@ -8,7 +9,7 @@ type FolderPageProps = {
 };
 
 async function getEmails(folderId: string, limit = 100): Promise<MailItem[]> {
-  const res = await fetch(
+  const res = await serverFetch(
     `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails?limit=${limit}`,
     {
       next: { revalidate: 600 },

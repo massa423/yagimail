@@ -1,5 +1,6 @@
 import { MailDetailPageClient } from './mail-detail-page-client';
 import { type MailDetail } from '@/types/mail';
+import { serverFetch } from '@/lib/server-fetch';
 
 type MailDetailPageProps = {
   params: Promise<{
@@ -12,7 +13,7 @@ async function getMailDetail(
   folderId: string,
   mailId: string,
 ): Promise<MailDetail | null> {
-  const res = await fetch(
+  const res = await serverFetch(
     `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails/${encodeURIComponent(mailId)}`,
     {
       next: { revalidate: 600 },

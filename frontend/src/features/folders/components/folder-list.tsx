@@ -1,9 +1,10 @@
 import FolderItem from '@/features/folders/components/folder-item';
 import { Card } from '@/components/ui/card';
 import { type MailFolder } from '@/types/mail';
+import { serverFetch } from '@/lib/server-fetch';
 
 async function getFolders(): Promise<MailFolder[]> {
-  const res = await fetch('http://localhost:8080/api/v1/folders', {
+  const res = await serverFetch('http://localhost:8080/api/v1/folders', {
     next: { revalidate: 600 },
   });
 

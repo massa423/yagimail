@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Toaster } from 'sonner';
+import { AuthProvider } from '@/contexts';
 import '@/app/globals.css';
 
 const geistSans = Geist({
@@ -28,7 +30,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <GoogleOAuthProvider
+          clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}
+        >
+          <AuthProvider>{children}</AuthProvider>
+        </GoogleOAuthProvider>
         <Toaster position="bottom-center" richColors />
       </body>
     </html>
