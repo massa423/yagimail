@@ -73,7 +73,17 @@ export function FolderPageClient({
       try {
         await markRead(folderId, ids);
       } catch {
-        setReadMap(prevReadMap);
+        setReadMap((prev) => {
+          const next = { ...prev };
+          ids.forEach((id) => {
+            if (id in prevReadMap) {
+              next[id] = prevReadMap[id];
+            } else {
+              delete next[id];
+            }
+          });
+          return next;
+        });
         toast.error('既読への変更に失敗しました');
       }
     });
@@ -92,7 +102,17 @@ export function FolderPageClient({
       try {
         await markUnread(folderId, ids);
       } catch {
-        setReadMap(prevReadMap);
+        setReadMap((prev) => {
+          const next = { ...prev };
+          ids.forEach((id) => {
+            if (id in prevReadMap) {
+              next[id] = prevReadMap[id];
+            } else {
+              delete next[id];
+            }
+          });
+          return next;
+        });
         toast.error('未読への変更に失敗しました');
       }
     });

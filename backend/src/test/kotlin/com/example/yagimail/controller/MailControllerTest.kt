@@ -127,6 +127,15 @@ class MailControllerTest {
     }
 
     @Test
+    fun `PATCH api v1 folders folderId mails read は空のmailIdsに対して400を返す`() {
+        mockMvc.perform(
+            patch("/api/v1/folders/INBOX/mails/read")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"mailIds":[],"isRead":true}""")
+        ).andExpect(status().isBadRequest())
+    }
+
+    @Test
     fun `POST api v1 folders folderId mails trash は複数メールをゴミ箱へ移動して204を返す`() {
         willDoNothing().given(moveToTrashUseCase).execute("INBOX", listOf("12345", "67890"))
 

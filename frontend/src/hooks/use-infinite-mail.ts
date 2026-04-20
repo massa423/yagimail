@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { type MailItem } from '@/types/mail';
 
 async function fetchMoreMails(
@@ -26,13 +27,17 @@ export function useInfiniteMail(
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(initialEmails.length >= limit);
   const offsetRef = useRef(initialEmails.length);
+  const isLoadingRef = useRef(false);
+  const hasMoreRef = useRef(initialEmails.length >= limit);
 
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore) return;
+    if (isLoadingRef.current || !hasMoreRef.current) return;
+    isLoadingRef.current = true;
     setIsLoadingMore(true);
     try {
       const newMails = await fetchMoreMails(folderId, offsetRef.current, limit);
       if (newMails.length < limit) {
+        hasMoreRef.current = false;
         setHasMore(false);
       }
       if (newMails.length > 0) {
@@ -40,11 +45,12 @@ export function useInfiniteMail(
         setEmails((prev) => [...prev, ...newMails]);
       }
     } catch {
-      // silently fail; user can scroll again to retry
+      toast.error('メールの読み込みに失敗しました');
     } finally {
+      isLoadingRef.current = false;
       setIsLoadingMore(false);
     }
-  }, [folderId, limit, isLoadingMore, hasMore]);
+  }, [folderId, limit]); // stable — guards use refs, not state
 
   return { emails, loadMore, hasMore, isLoadingMore };
 }

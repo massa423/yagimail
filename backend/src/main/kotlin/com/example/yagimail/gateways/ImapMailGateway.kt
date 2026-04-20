@@ -16,17 +16,17 @@ import java.util.*
 
 @Component
 class ImapMailGateway(
-    @Value($$"${mail.imap.host}") private val host: String,
-    @Value($$"${mail.imap.port}") private val port: Int,
-    @Value($$"${mail.imap.username}") private val username: String,
-    @Value($$"${mail.imap.password}") private val password: String,
-    @Value($$"${mail.imap.protocol}") private val protocol: String,
-    @Value($$"${mail.imap.trash}") private val trashFolderName: String,
+    @Value("\${mail.imap.host}") private val host: String,
+    @Value("\${mail.imap.port}") private val port: Int,
+    @Value("\${mail.imap.username}") private val username: String,
+    @Value("\${mail.imap.password}") private val password: String,
+    @Value("\${mail.imap.protocol}") private val protocol: String,
+    @Value("\${mail.imap.trash}") private val trashFolderName: String,
 ) : MailGateway {
     private val logger = LoggerFactory.getLogger(ImapMailGateway::class.java)
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm")
 
-    override fun getMailList(folderId: String, limit: Int, offset: Int): List<MailItem> {
+    private fun createStore(): Store {
         val properties = Properties().apply {
             put("mail.store.protocol", protocol)
             put("mail.${protocol}.host", host)
@@ -34,21 +34,23 @@ class ImapMailGateway(
             put("mail.${protocol}.ssl.enable", "true")
             put("mail.${protocol}.ssl.trust", "*")
         }
+        return Session.getInstance(properties).getStore(protocol)
+    }
 
-        val session = Session.getInstance(properties)
-        val store = session.getStore(protocol)
-
-        return try {
+    override fun getMailList(folderId: String, limit: Int, offset: Int): List<MailItem> {
+        val store = createStore()
+        var inbox: Folder? = null
+        try {
             store.connect(host, username, password)
+            val openedInbox = store.getFolder(folderId)
+            openedInbox.open(Folder.READ_ONLY)
+            inbox = openedInbox
 
-            val inbox = store.getFolder(folderId)
-            inbox.open(Folder.READ_ONLY)
-
-            val messageCount = inbox.messageCount
+            val messageCount = openedInbox.messageCount
 
             val end = maxOf(0, messageCount - offset)
             val start = maxOf(1, end - limit + 1)
-            val messages = if (end > 0) inbox.getMessages(start, end) else emptyArray()
+            val messages = if (end > 0) openedInbox.getMessages(start, end) else emptyArray()
 
             // FetchProfileで必要な情報を一括取得（高速化）
             if (messages.isNotEmpty()) {
@@ -56,13 +58,13 @@ class ImapMailGateway(
                     add(FetchProfile.Item.ENVELOPE)  // 送信者、件名、日付
                     add(FetchProfile.Item.FLAGS)     // 既読、スターなどのフラグ
                 }
-                inbox.fetch(messages, fetchProfile)
+                openedInbox.fetch(messages, fetchProfile)
             }
 
-            val mailItems = messages.mapIndexed { index, message ->
+            return messages.mapIndexed { index, message ->
                 val uid = try {
-                    if (inbox is UIDFolder) {
-                        inbox.getUID(message)
+                    if (openedInbox is UIDFolder) {
+                        openedInbox.getUID(message)
                     } else {
                         (index + 1).toLong()
                     }
@@ -72,104 +74,67 @@ class ImapMailGateway(
                 }
                 convertToMailItem(message, uid)
             }.reversed() // 新しいメールを先頭に
-
-            inbox.close(false)
-            store.close()
-
-            mailItems
         } catch (e: Exception) {
             logger.error("エラーが発生しました: ${e.message}", e)
-            e.printStackTrace()
-            emptyList()
+            throw e
+        } finally {
+            runCatching { inbox?.close(false) }
+            runCatching { store.close() }
         }
     }
 
     override fun toggleFlag(folderId: String, mailId: String): Boolean {
-        val properties = Properties().apply {
-            put("mail.store.protocol", protocol)
-            put("mail.${protocol}.host", host)
-            put("mail.${protocol}.port", port.toString())
-            put("mail.${protocol}.ssl.enable", "true")
-            put("mail.${protocol}.ssl.trust", "*")
-        }
-
-        val session = Session.getInstance(properties)
-        val store = session.getStore(protocol)
-
-        return try {
+        val store = createStore()
+        var folder: Folder? = null
+        try {
             store.connect(host, username, password)
+            val openedFolder = store.getFolder(folderId)
+            openedFolder.open(Folder.READ_WRITE)
+            folder = openedFolder
 
-            val folder = store.getFolder(folderId)
-            folder.open(Folder.READ_WRITE)
-
-            val message = if (folder is UIDFolder) {
-                folder.getMessageByUID(mailId.toLong())
-            } else {
-                null
-            } ?: run {
-                folder.close(false)
-                store.close()
-                throw NoSuchElementException("Mail not found: $mailId")
-            }
+            val message = (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                ?: throw NoSuchElementException("Mail not found: $mailId")
 
             val isCurrentlyFlagged = message.flags.contains(Flags.Flag.FLAGGED)
             message.setFlag(Flags.Flag.FLAGGED, !isCurrentlyFlagged)
 
-            folder.close(false)
-            store.close()
-
-            !isCurrentlyFlagged
+            return !isCurrentlyFlagged
         } catch (e: NoSuchElementException) {
             throw e
         } catch (e: Exception) {
             logger.error("フラグ切り替え中にエラーが発生しました: ${e.message}", e)
             throw e
+        } finally {
+            runCatching { folder?.close(false) }
+            runCatching { store.close() }
         }
     }
 
     override fun getMail(folderId: String, mailId: String): MailDetail? {
-        val properties = Properties().apply {
-            put("mail.store.protocol", protocol)
-            put("mail.${protocol}.host", host)
-            put("mail.${protocol}.port", port.toString())
-            put("mail.${protocol}.ssl.enable", "true")
-            put("mail.${protocol}.ssl.trust", "*")
-        }
-
-        val session = Session.getInstance(properties)
-        val store = session.getStore(protocol)
-
-        return try {
+        val store = createStore()
+        var folder: Folder? = null
+        try {
             store.connect(host, username, password)
+            val openedFolder = store.getFolder(folderId)
+            openedFolder.open(Folder.READ_WRITE)
+            folder = openedFolder
 
-            val folder = store.getFolder(folderId)
-            folder.open(Folder.READ_WRITE)
+            val message = (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                ?: return null
 
-            val message = if (folder is UIDFolder) {
-                folder.getMessageByUID(mailId.toLong())
-            } else {
-                null
-            }
-
-            if (message == null) {
-                folder.close(false)
-                store.close()
-                return null
-            }
-
-            val uid = if (folder is UIDFolder) folder.getUID(message) else mailId.toLong()
-            val detail = convertToMailDetail(message, uid, folder)
+            val uid = if (openedFolder is UIDFolder) openedFolder.getUID(message) else mailId.toLong()
+            val detail = convertToMailDetail(message, uid, openedFolder)
 
             // 本文 fetch 後に既読化
             message.setFlag(Flags.Flag.SEEN, true)
 
-            folder.close(false)
-            store.close()
-
-            detail
+            return detail
         } catch (e: Exception) {
             logger.error("メール取得中にエラーが発生しました: ${e.message}", e)
-            null
+            return null
+        } finally {
+            runCatching { folder?.close(false) }
+            runCatching { store.close() }
         }
     }
 
@@ -252,7 +217,7 @@ class ImapMailGateway(
         val isRead = flags.contains(Flags.Flag.SEEN)
         val isStarred = flags.contains(Flags.Flag.FLAGGED)
 
-        val mailItem = MailItem(
+        return MailItem(
             id = uid.toString(),
             displayName = displayName,
             subject = subject,
@@ -261,89 +226,63 @@ class ImapMailGateway(
             isRead = isRead,
             senderIcon = "user"
         )
-
-        return mailItem
     }
 
     override fun moveToTrash(folderId: String, mailIds: List<String>) {
-        val properties = Properties().apply {
-            put("mail.store.protocol", protocol)
-            put("mail.${protocol}.host", host)
-            put("mail.${protocol}.port", port.toString())
-            put("mail.${protocol}.ssl.enable", "true")
-            put("mail.${protocol}.ssl.trust", "*")
-        }
-
-        val session = Session.getInstance(properties)
-        val store = session.getStore(protocol)
-
+        val store = createStore()
+        var folder: Folder? = null
+        var expunge = false
         try {
             store.connect(host, username, password)
-
-            val folder = store.getFolder(folderId)
-            folder.open(Folder.READ_WRITE)
+            val openedFolder = store.getFolder(folderId)
+            openedFolder.open(Folder.READ_WRITE)
+            folder = openedFolder
 
             val messages = mailIds.mapNotNull { mailId ->
-                (folder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
             }
 
-            if (messages.isEmpty()) {
-                folder.close(false)
-                store.close()
-                throw NoSuchElementException("No mails found: $mailIds")
-            }
+            if (messages.isEmpty()) throw NoSuchElementException("No mails found: $mailIds")
 
             val trashFolder = store.getFolder(trashFolderName)
-            folder.copyMessages(messages.toTypedArray(), trashFolder)
-            folder.setFlags(messages.toTypedArray(), Flags(Flags.Flag.DELETED), true)
-
-            folder.close(true) // expunge して完全削除
-            store.close()
+            openedFolder.copyMessages(messages.toTypedArray(), trashFolder)
+            openedFolder.setFlags(messages.toTypedArray(), Flags(Flags.Flag.DELETED), true)
+            expunge = true
         } catch (e: NoSuchElementException) {
             throw e
         } catch (e: Exception) {
             logger.error("ゴミ箱への移動中にエラーが発生しました: ${e.message}", e)
             throw e
+        } finally {
+            runCatching { folder?.close(expunge) }
+            runCatching { store.close() }
         }
     }
 
     override fun markRead(folderId: String, mailIds: List<String>, isRead: Boolean) {
-        val properties = Properties().apply {
-            put("mail.store.protocol", protocol)
-            put("mail.${protocol}.host", host)
-            put("mail.${protocol}.port", port.toString())
-            put("mail.${protocol}.ssl.enable", "true")
-            put("mail.${protocol}.ssl.trust", "*")
-        }
-
-        val session = Session.getInstance(properties)
-        val store = session.getStore(protocol)
-
+        val store = createStore()
+        var folder: Folder? = null
         try {
             store.connect(host, username, password)
-
-            val folder = store.getFolder(folderId)
-            folder.open(Folder.READ_WRITE)
+            val openedFolder = store.getFolder(folderId)
+            openedFolder.open(Folder.READ_WRITE)
+            folder = openedFolder
 
             val messages = mailIds.mapNotNull { mailId ->
-                (folder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
             }
 
-            if (messages.isEmpty()) {
-                folder.close(false)
-                store.close()
-                throw NoSuchElementException("No mails found: $mailIds")
-            }
+            if (messages.isEmpty()) throw NoSuchElementException("No mails found: $mailIds")
 
-            folder.setFlags(messages.toTypedArray(), Flags(Flags.Flag.SEEN), isRead)
-
-            folder.close(false)
-            store.close()
+            openedFolder.setFlags(messages.toTypedArray(), Flags(Flags.Flag.SEEN), isRead)
         } catch (e: NoSuchElementException) {
             throw e
         } catch (e: Exception) {
             logger.error("既読状態の変更中にエラーが発生しました: ${e.message}", e)
             throw e
+        } finally {
+            runCatching { folder?.close(false) }
+            runCatching { store.close() }
         }
     }
 
