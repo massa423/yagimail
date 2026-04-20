@@ -52,6 +52,9 @@ class MailController(
         @PathVariable folderId: String,
         @RequestBody request: MarkReadRequest,
     ): ResponseEntity<Void> {
+        if (request.mailIds.isEmpty()) {
+            return ResponseEntity.badRequest().build()
+        }
         return try {
             markReadUseCase.execute(folderId, request.mailIds, request.isRead)
             ResponseEntity.noContent().build()

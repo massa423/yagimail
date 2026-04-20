@@ -9,8 +9,9 @@ type FolderPageProps = {
 };
 
 async function getEmails(folderId: string, limit = 100): Promise<MailItem[]> {
+  const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:8080';
   const res = await serverFetch(
-    `http://localhost:8080/api/v1/folders/${encodeURIComponent(folderId)}/mails?limit=${limit}`,
+    `${backendUrl}/api/v1/folders/${encodeURIComponent(folderId)}/mails?limit=${limit}`,
     {
       next: { revalidate: 600 },
     },
