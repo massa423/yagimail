@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { Header, BottomNavigation } from '@/components';
 import { MailDetail as MailDetailComponent } from '@/features/emails';
 import { useMailDetailQuery } from '@/features/emails/hooks/use-mail-detail-query';
-import { useMarkReadMutation } from '@/features/emails/hooks/use-mark-read-mutation';
+import { useMarkReadOnOpen } from '@/features/emails/hooks/use-mark-read-on-open';
 import { useToggleFlagMutation } from '@/features/emails/hooks/use-toggle-flag-mutation';
 
 type MailDetailPageClientProps = {
@@ -18,19 +17,7 @@ export function MailDetailPageClient({
 }: MailDetailPageClientProps) {
   const { data: email, isPending } = useMailDetailQuery(folderId, emailId);
   const toggleFlagMutation = useToggleFlagMutation();
-  const markReadMutation = useMarkReadMutation();
-  const markedReadIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (email && !email.isRead && markedReadIdRef.current !== emailId) {
-      markedReadIdRef.current = emailId;
-      markReadMutation.mutate({
-        folderId,
-        mailIds: [emailId],
-        isRead: true,
-      });
-    }
-  }, [email, folderId, emailId, markReadMutation]);
+  useMarkReadOnOpen(folderId, emailId, email);
 
   if (isPending) {
     return null;
