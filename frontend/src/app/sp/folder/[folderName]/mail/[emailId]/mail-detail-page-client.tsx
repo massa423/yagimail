@@ -1,41 +1,48 @@
 'use client';
 
-import { useEffect, startTransition } from 'react';
+import { useEffect, useRef } from 'react';
 import { Header, BottomNavigation } from '@/components';
 import { MailDetail as MailDetailComponent } from '@/features/emails';
-import { toggleFlag } from '@/features/emails/actions/toggle-flag';
-import { useMailStarStore } from '@/features/emails/store/mail-star-store';
-import { type MailDetail } from '@/types/mail';
+import { useMailDetailQuery } from '@/features/emails/hooks/use-mail-detail-query';
+import { useMarkReadMutation } from '@/features/emails/hooks/use-mark-read-mutation';
+import { useToggleFlagMutation } from '@/features/emails/hooks/use-toggle-flag-mutation';
 
 type MailDetailPageClientProps = {
   folderId: string;
   emailId: string;
-  email: MailDetail | null;
 };
 
 export function MailDetailPageClient({
   folderId,
   emailId,
-  email: initialEmail,
 }: MailDetailPageClientProps) {
-  const { starredMap, initStars, toggleStar, setStar } = useMailStarStore();
+  const { data: email, isPending } = useMailDetailQuery(folderId, emailId);
+  const toggleFlagMutation = useToggleFlagMutation();
+  const markReadMutation = useMarkReadMutation();
+  const markedReadIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (initialEmail) initStars([initialEmail]);
-  }, [initialEmail, initStars]);
+    if (email && !email.isRead && markedReadIdRef.current !== emailId) {
+      markedReadIdRef.current = emailId;
+      markReadMutation.mutate({
+        folderId,
+        mailIds: [emailId],
+        isRead: true,
+      });
+    }
+  }, [email, folderId, emailId, markReadMutation]);
 
-  if (!initialEmail) {
+  if (isPending) {
+    return null;
+  }
+
+  if (!email) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-muted-foreground">メールが見つかりません</p>
       </div>
     );
   }
-
-  const email = {
-    ...initialEmail,
-    isStarred: starredMap[emailId] ?? initialEmail.isStarred,
-  };
 
   const handleReplyClick = () => {
     console.log('Reply clicked for email:', emailId);
@@ -50,11 +57,7 @@ export function MailDetailPageClient({
   };
 
   const handleStarToggle = () => {
-    toggleStar(emailId);
-    startTransition(async () => {
-      const { isStarred } = await toggleFlag(folderId, emailId);
-      setStar(emailId, isStarred);
-    });
+    toggleFlagMutation.mutate({ folderId, mailId: emailId });
   };
 
   return (
