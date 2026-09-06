@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts';
+import { QueryProvider } from '@/components/providers/query-provider';
 import '@/app/globals.css';
 
 const geistSans = Geist({
@@ -33,7 +34,9 @@ export default function RootLayout({
         <GoogleOAuthProvider
           clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}
         >
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <QueryProvider>{children}</QueryProvider>
+          </AuthProvider>
         </GoogleOAuthProvider>
         <Toaster position="bottom-center" richColors />
       </body>

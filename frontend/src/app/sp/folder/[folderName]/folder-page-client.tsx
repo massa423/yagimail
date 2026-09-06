@@ -1,42 +1,35 @@
 'use client';
 
-import { useEffect, startTransition, useState } from 'react';
+import { useState } from 'react';
 import { CheckSquare, Square, MinusSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header, BottomNavigation } from '@/components';
 import { MailList } from '@/features/emails';
 import MailActionBar from '@/features/emails/components/mail-action-bar';
-import { toggleFlag } from '@/features/emails/actions/toggle-flag';
-import { markRead } from '@/features/emails/actions/mark-read';
-import { markUnread } from '@/features/emails/actions/mark-unread';
-import { moveToTrash } from '@/features/emails/actions/move-to-trash';
-import { useMailStarStore } from '@/features/emails/store/mail-star-store';
-import { useInfiniteMail } from '@/hooks/use-infinite-mail';
-import { type MailItem } from '@/types/mail';
+import { useMailsQuery } from '@/features/emails/hooks/use-mails-query';
+import { useToggleFlagMutation } from '@/features/emails/hooks/use-toggle-flag-mutation';
+import { useMarkReadMutation } from '@/features/emails/hooks/use-mark-read-mutation';
+import { useMoveToTrashMutation } from '@/features/emails/hooks/use-move-to-trash-mutation';
 
 type FolderPageClientProps = {
   folderId: string;
-  initialEmails: MailItem[];
 };
 
-export function FolderPageClient({
-  folderId,
-  initialEmails,
-}: FolderPageClientProps) {
-  const { starredMap, initStars, toggleStar, setStar } = useMailStarStore();
+export function FolderPageClient({ folderId }: FolderPageClientProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [readMap, setReadMap] = useState<Record<string, boolean>>({});
-  const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
-  const {
-    emails: rawEmails,
-    loadMore,
-    hasMore,
-    isLoadingMore,
-  } = useInfiniteMail(folderId, initialEmails);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isPending } =
+    useMailsQuery(folderId);
+  const emails = data?.pages.flat() ?? [];
 
-  useEffect(() => {
-    initStars(rawEmails);
-  }, [rawEmails, initStars]);
+  const toggleFlagMutation = useToggleFlagMutation();
+  const markReadMutation = useMarkReadMutation();
+  const moveToTrashMutation = useMoveToTrashMutation();
+
+  const loadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
 
   const handleSelect = (emailId: string) => {
     setSelectedIds((prev) => {
@@ -51,84 +44,25 @@ export function FolderPageClient({
   };
 
   const handleStarClick = (emailId: string) => {
-    toggleStar(emailId);
-    startTransition(async () => {
-      const { isStarred } = await toggleFlag(folderId, emailId);
-      setStar(emailId, isStarred);
-    });
+    toggleFlagMutation.mutate({ folderId, mailId: emailId });
   };
 
-  const selectedIdsArray = Array.from(selectedIds);
-
   const handleMarkRead = () => {
-    const ids = [...selectedIdsArray];
-    const prevReadMap = { ...readMap };
-    setReadMap((prev) => {
-      const next = { ...prev };
-      ids.forEach((id) => (next[id] = true));
-      return next;
-    });
+    const ids = Array.from(selectedIds);
     setSelectedIds(new Set());
-    startTransition(async () => {
-      try {
-        await markRead(folderId, ids);
-      } catch {
-        setReadMap((prev) => {
-          const next = { ...prev };
-          ids.forEach((id) => {
-            if (id in prevReadMap) {
-              next[id] = prevReadMap[id];
-            } else {
-              delete next[id];
-            }
-          });
-          return next;
-        });
-        toast.error('既読への変更に失敗しました');
-      }
-    });
+    markReadMutation.mutate({ folderId, mailIds: ids, isRead: true });
   };
 
   const handleMarkUnread = () => {
-    const ids = [...selectedIdsArray];
-    const prevReadMap = { ...readMap };
-    setReadMap((prev) => {
-      const next = { ...prev };
-      ids.forEach((id) => (next[id] = false));
-      return next;
-    });
+    const ids = Array.from(selectedIds);
     setSelectedIds(new Set());
-    startTransition(async () => {
-      try {
-        await markUnread(folderId, ids);
-      } catch {
-        setReadMap((prev) => {
-          const next = { ...prev };
-          ids.forEach((id) => {
-            if (id in prevReadMap) {
-              next[id] = prevReadMap[id];
-            } else {
-              delete next[id];
-            }
-          });
-          return next;
-        });
-        toast.error('未読への変更に失敗しました');
-      }
-    });
+    markReadMutation.mutate({ folderId, mailIds: ids, isRead: false });
   };
 
   const handleMoveToTrash = () => {
-    const ids = [...selectedIdsArray];
+    const ids = Array.from(selectedIds);
     setSelectedIds(new Set());
-    startTransition(async () => {
-      try {
-        await moveToTrash(folderId, ids);
-        setTrashedIds((prev) => new Set([...prev, ...ids]));
-      } catch {
-        toast.error('削除に失敗しました');
-      }
-    });
+    moveToTrashMutation.mutate({ folderId, mailIds: ids });
   };
 
   const handleSelectAll = () => {
@@ -143,13 +77,9 @@ export function FolderPageClient({
     toast('通報しました');
   };
 
-  const emails = rawEmails
-    .filter((email) => !trashedIds.has(email.id))
-    .map((email) => ({
-      ...email,
-      isStarred: starredMap[email.id] ?? email.isStarred,
-      isRead: readMap[email.id] ?? email.isRead,
-    }));
+  if (isPending) {
+    return null;
+  }
 
   const selectedCount = selectedIds.size;
   const allSelected = selectedCount > 0 && selectedCount === emails.length;
@@ -190,8 +120,8 @@ export function FolderPageClient({
         selectedIds={selectedIds}
         onSelect={handleSelect}
         onLoadMore={loadMore}
-        hasMore={hasMore}
-        isLoadingMore={isLoadingMore}
+        hasMore={hasNextPage}
+        isLoadingMore={isFetchingNextPage}
       />
 
       {selectedIds.size === 0 && <BottomNavigation />}

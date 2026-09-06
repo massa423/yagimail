@@ -1,23 +1,15 @@
+'use client';
+
 import FolderItem from '@/features/folders/components/folder-item';
 import { Card } from '@/components/ui/card';
-import { type MailFolder } from '@/types/mail';
-import { serverFetch } from '@/lib/server-fetch';
+import { useFoldersQuery } from '@/features/folders/hooks/use-folders-query';
 
-async function getFolders(): Promise<MailFolder[]> {
-  const res = await serverFetch('http://localhost:8080/api/v1/folders', {
-    next: { revalidate: 600 },
-  });
+export default function FolderList() {
+  const { data: folders } = useFoldersQuery();
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch folders');
+  if (!folders) {
+    return null;
   }
-
-  const data: { folders: MailFolder[] } = await res.json();
-  return data.folders;
-}
-
-export default async function FolderList() {
-  const folders = await getFolders();
 
   return (
     <div className="p-3">
