@@ -5,6 +5,7 @@ import com.example.yagimail.domain.model.MailDetail
 import com.example.yagimail.domain.model.MailItem
 import jakarta.mail.*
 import jakarta.mail.UIDFolder
+import jakarta.mail.internet.MimeMessage
 import jakarta.mail.internet.MimeMultipart
 import jakarta.mail.internet.MimeUtility
 import java.io.InputStream
@@ -22,6 +23,7 @@ class ImapMailGateway(
     @Value("\${mail.imap.password}") private val password: String,
     @Value("\${mail.imap.protocol}") private val protocol: String,
     @Value("\${mail.imap.trash}") private val trashFolderName: String,
+    @Value("\${mail.imap.sent}") private val sentFolderName: String,
 ) : MailGateway {
     private val logger = LoggerFactory.getLogger(ImapMailGateway::class.java)
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm")
@@ -282,6 +284,31 @@ class ImapMailGateway(
             throw e
         } finally {
             runCatching { folder?.close(false) }
+            runCatching { store.close() }
+        }
+    }
+
+    override fun appendToSent(rawMessage: ByteArray) {
+        val store = createStore()
+        try {
+            store.connect(host, username, password)
+            val sentFolder = store.getFolder(sentFolderName)
+            if (!sentFolder.exists()) {
+                sentFolder.create(Folder.HOLDS_MESSAGES)
+            }
+
+            // 送信したバイト列から復元するため、Message-ID を含むヘッダは送信時のまま保たれる
+            val message = MimeMessage(
+                Session.getInstance(Properties()),
+                rawMessage.inputStream(),
+            ).apply {
+                setFlag(Flags.Flag.SEEN, true) // 自分が送ったメールなので既読にする
+            }
+            sentFolder.appendMessages(arrayOf(message))
+        } catch (e: Exception) {
+            logger.error("送信済みフォルダへの保存中にエラーが発生しました: ${e.message}", e)
+            throw e
+        } finally {
             runCatching { store.close() }
         }
     }

@@ -7,6 +7,7 @@ import {
   SettingsIcon,
 } from '@/components/ui/icons/navigation-icons';
 import { Button } from '@/components/ui/button';
+import { ComposeMailModal } from '@/features/emails';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -24,9 +25,15 @@ export default function BottomNavigation() {
     { id: 'settings', label: '設定', icon: SettingsIcon },
   ];
   const [activeNavItem, setActiveNavItem] = useState('home');
+  const [composeOpen, setComposeOpen] = useState(false);
   const router = useRouter();
 
   const handleNavClick = (itemId: string) => {
+    if (itemId === 'compose') {
+      // モーダルは遷移先ではないため activeNavItem は変えない
+      setComposeOpen(true);
+      return;
+    }
     setActiveNavItem(itemId);
     if (itemId === 'home') {
       router.push('/sp');
@@ -52,6 +59,7 @@ export default function BottomNavigation() {
           );
         })}
       </div>
+      <ComposeMailModal open={composeOpen} onOpenChange={setComposeOpen} />
     </nav>
   );
 }
