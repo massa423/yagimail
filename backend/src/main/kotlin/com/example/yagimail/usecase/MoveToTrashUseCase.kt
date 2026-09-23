@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class MoveToTrashUseCase(
-    private val mailGateway: MailGateway
+    private val mailGateway: MailGateway,
 ) {
-    fun execute(folderId: String, mailIds: List<String>) =
-        mailGateway.moveToTrash(folderId, mailIds)
+    fun execute(
+        folderId: String,
+        mailIds: List<String>,
+    ) = mailGateway.moveToTrash(folderId, mailIds)
 }

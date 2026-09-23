@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class GetMailListUseCase(
-    private val mailGateway: MailGateway
+    private val mailGateway: MailGateway,
 ) {
-    fun execute(folderId: String, limit: Int, offset: Int): List<MailItem> {
-        return mailGateway.getMailList(folderId, limit, offset)
-    }
+    fun execute(
+        folderId: String,
+        limit: Int,
+        offset: Int,
+    ): List<MailItem> = mailGateway.getMailList(folderId, limit, offset)
 }

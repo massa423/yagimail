@@ -7,5 +7,5 @@ data class MailItem(
     val receivedDate: String,
     val isStarred: Boolean,
     val isRead: Boolean,
-    val senderIcon: String
+    val senderIcon: String,
 )
