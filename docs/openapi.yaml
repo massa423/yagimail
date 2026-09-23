@@ -109,6 +109,31 @@ paths:
         "404":
           description: Mail not found
 
+  /api/v1/mails/send:
+    post:
+      summary: Send a mail via SMTP
+      description: |
+        Sends the mail via SMTP, then appends a copy to the IMAP Sent folder
+        (`mail.imap.sent`, default `Sent`) flagged as read.
+        If the append fails the request still succeeds, since the mail has
+        already been sent and a retry would deliver it twice.
+      operationId: sendMail
+      tags:
+        - mails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendMailRequest"
+      responses:
+        "204":
+          description: Mail sent
+        "400":
+          description: |
+            Invalid request: `to` is empty, `subject` is blank,
+            or an address is malformed.
+
 components:
   parameters:
     folderId:
@@ -124,6 +149,39 @@ components:
       example: INBOX
 
   schemas:
+    SendMailRequest:
+      type: object
+      required:
+        - to
+        - subject
+      properties:
+        to:
+          type: array
+          items:
+            type: string
+            format: email
+          minItems: 1
+          description: Recipient addresses
+        cc:
+          type: array
+          items:
+            type: string
+            format: email
+          default: []
+        bcc:
+          type: array
+          items:
+            type: string
+            format: email
+          default: []
+        subject:
+          type: string
+          description: Mail subject (must not be blank)
+        body:
+          type: string
+          default: ""
+          description: Plain-text mail body
+
     FolderType:
       type: string
       enum:

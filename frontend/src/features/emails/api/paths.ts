@@ -10,6 +10,10 @@ export function mailDetailPath(folderId: string, mailId: string): string {
   return `/api/v1/folders/${encodeURIComponent(folderId)}/mails/${encodeURIComponent(mailId)}`;
 }
 
+export function sendMailPath(): string {
+  return '/api/v1/mails/send';
+}
+
 export function backendUrl(): string {
   return process.env.BACKEND_URL ?? 'http://localhost:8080';
 }

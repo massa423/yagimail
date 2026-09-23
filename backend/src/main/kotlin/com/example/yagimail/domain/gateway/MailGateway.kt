@@ -9,4 +9,6 @@ interface MailGateway {
     fun toggleFlag(folderId: String, mailId: String): Boolean
     fun moveToTrash(folderId: String, mailIds: List<String>)
     fun markRead(folderId: String, mailIds: List<String>, isRead: Boolean)
+    /** 送信済みメールの RFC822 表現を Sent フォルダへ既読状態で保存する。 */
+    fun appendToSent(rawMessage: ByteArray)
 }
