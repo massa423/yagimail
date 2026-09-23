@@ -5,8 +5,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class MarkReadUseCase(
-    private val mailGateway: MailGateway
+    private val mailGateway: MailGateway,
 ) {
-    fun execute(folderId: String, mailIds: List<String>, isRead: Boolean) =
-        mailGateway.markRead(folderId, mailIds, isRead)
+    fun execute(
+        folderId: String,
+        mailIds: List<String>,
+        isRead: Boolean,
+    ) = mailGateway.markRead(folderId, mailIds, isRead)
 }

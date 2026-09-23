@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.Date
+import java.util.Properties
 
 @Component
 class SmtpMailGateway(
@@ -25,16 +26,19 @@ class SmtpMailGateway(
     private val logger = LoggerFactory.getLogger(SmtpMailGateway::class.java)
 
     private fun createSession(): Session {
-        val properties = Properties().apply {
-            put("mail.smtp.host", host)
-            put("mail.smtp.port", port.toString())
-            put("mail.smtp.auth", "true")
-            put("mail.smtp.starttls.enable", "true")
-        }
-        return Session.getInstance(properties, object : Authenticator() {
-            override fun getPasswordAuthentication(): PasswordAuthentication =
-                PasswordAuthentication(username, password)
-        })
+        val properties =
+            Properties().apply {
+                put("mail.smtp.host", host)
+                put("mail.smtp.port", port.toString())
+                put("mail.smtp.auth", "true")
+                put("mail.smtp.starttls.enable", "true")
+            }
+        return Session.getInstance(
+            properties,
+            object : Authenticator() {
+                override fun getPasswordAuthentication(): PasswordAuthentication = PasswordAuthentication(username, password)
+            },
+        )
     }
 
     override fun send(mail: OutgoingMail): ByteArray {
@@ -65,10 +69,8 @@ class SmtpMailGateway(
             sentDate = Date()
         }
 
-    private fun parseAddresses(addresses: List<String>): Array<InternetAddress> =
-        addresses.map { InternetAddress(it, true) }.toTypedArray()
+    private fun parseAddresses(addresses: List<String>): Array<InternetAddress> = addresses.map { InternetAddress(it, true) }.toTypedArray()
 
     // 送信済みメッセージは saved 状態のため、writeTo でヘッダが再生成されることはない
-    private fun MimeMessage.toRfc822Bytes(): ByteArray =
-        ByteArrayOutputStream().also { writeTo(it) }.toByteArray()
+    private fun MimeMessage.toRfc822Bytes(): ByteArray = ByteArrayOutputStream().also { writeTo(it) }.toByteArray()
 }

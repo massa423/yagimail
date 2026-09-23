@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class ToggleFlagUseCase(
-    private val mailGateway: MailGateway
+    private val mailGateway: MailGateway,
 ) {
-    fun execute(folderId: String, mailId: String): Boolean =
-        mailGateway.toggleFlag(folderId, mailId)
+    fun execute(
+        folderId: String,
+        mailId: String,
+    ): Boolean = mailGateway.toggleFlag(folderId, mailId)
 }
