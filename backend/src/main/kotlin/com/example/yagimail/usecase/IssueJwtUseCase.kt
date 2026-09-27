@@ -21,13 +21,15 @@ class IssueJwtUseCase(
 
     fun execute(user: AuthUser): String {
         val now = Instant.now()
-        val claims = JWTClaimsSet.Builder()
-            .subject(user.sub)
-            .claim("email", user.email)
-            .claim("name", user.name)
-            .issueTime(Date.from(now))
-            .expirationTime(Date.from(now.plusSeconds(expirationSeconds)))
-            .build()
+        val claims =
+            JWTClaimsSet
+                .Builder()
+                .subject(user.sub)
+                .claim("email", user.email)
+                .claim("name", user.name)
+                .issueTime(Date.from(now))
+                .expirationTime(Date.from(now.plusSeconds(expirationSeconds)))
+                .build()
 
         val jwt = SignedJWT(JWSHeader(JWSAlgorithm.HS256), claims)
         jwt.sign(MACSigner(secret))

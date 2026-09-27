@@ -85,6 +85,8 @@ yagimail/
 
 ## Development
 
+### Frontend
+
 ```bash
 # Lint
 pnpm --prefix frontend lint
@@ -94,6 +96,21 @@ pnpm --prefix frontend format
 
 # Type check
 pnpm --prefix frontend typecheck
+```
+
+### Backend
+
+```bash
+cd backend
+
+# Lint (ktlint)
+./gradlew ktlintCheck
+
+# Format (ktlint)
+./gradlew ktlintFormat
+
+# Unit test
+./gradlew test
 ```
 
 CI runs these checks automatically on pushes to `main` and `feature/*` branches via GitHub Actions.

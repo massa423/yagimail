@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class MailListController(
-    private val getMailListUseCase: GetMailListUseCase
+    private val getMailListUseCase: GetMailListUseCase,
 ) {
     @GetMapping("/api/v1/folders/{folderId}/mails")
     fun mailList(

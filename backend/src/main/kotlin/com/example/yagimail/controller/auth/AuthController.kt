@@ -10,9 +10,14 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-data class LoginRequest(val idToken: String)
+data class LoginRequest(
+    val idToken: String,
+)
 
-data class LoginResponse(val email: String, val name: String)
+data class LoginResponse(
+    val email: String,
+    val name: String,
+)
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,8 +31,9 @@ class AuthController(
         @RequestBody request: LoginRequest,
         response: HttpServletResponse,
     ): ResponseEntity<LoginResponse> {
-        val authUser = verifyGoogleTokenUseCase.execute(request.idToken)
-            ?: return ResponseEntity.status(401).build()
+        val authUser =
+            verifyGoogleTokenUseCase.execute(request.idToken)
+                ?: return ResponseEntity.status(401).build()
 
         val jwt = issueJwtUseCase.execute(authUser)
 

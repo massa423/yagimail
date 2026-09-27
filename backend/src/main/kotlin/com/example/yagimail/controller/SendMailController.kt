@@ -38,7 +38,7 @@ class SendMailController(
                 bcc = request.bcc,
                 subject = request.subject,
                 body = request.body,
-            )
+            ),
         )
         return ResponseEntity.noContent().build()
     }

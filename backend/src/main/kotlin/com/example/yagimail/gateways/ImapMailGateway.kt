@@ -3,17 +3,23 @@ package com.example.yagimail.gateways
 import com.example.yagimail.domain.gateway.MailGateway
 import com.example.yagimail.domain.model.MailDetail
 import com.example.yagimail.domain.model.MailItem
-import jakarta.mail.*
+import jakarta.mail.FetchProfile
+import jakarta.mail.Flags
+import jakarta.mail.Folder
+import jakarta.mail.Message
+import jakarta.mail.Part
+import jakarta.mail.Session
+import jakarta.mail.Store
 import jakarta.mail.UIDFolder
 import jakarta.mail.internet.MimeMessage
 import jakarta.mail.internet.MimeMultipart
 import jakarta.mail.internet.MimeUtility
-import java.io.InputStream
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.io.InputStream
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Properties
 
 @Component
 class ImapMailGateway(
@@ -29,17 +35,22 @@ class ImapMailGateway(
     private val dateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm")
 
     private fun createStore(): Store {
-        val properties = Properties().apply {
-            put("mail.store.protocol", protocol)
-            put("mail.${protocol}.host", host)
-            put("mail.${protocol}.port", port.toString())
-            put("mail.${protocol}.ssl.enable", "true")
-            put("mail.${protocol}.ssl.trust", "*")
-        }
+        val properties =
+            Properties().apply {
+                put("mail.store.protocol", protocol)
+                put("mail.$protocol.host", host)
+                put("mail.$protocol.port", port.toString())
+                put("mail.$protocol.ssl.enable", "true")
+                put("mail.$protocol.ssl.trust", "*")
+            }
         return Session.getInstance(properties).getStore(protocol)
     }
 
-    override fun getMailList(folderId: String, limit: Int, offset: Int): List<MailItem> {
+    override fun getMailList(
+        folderId: String,
+        limit: Int,
+        offset: Int,
+    ): List<MailItem> {
         val store = createStore()
         var inbox: Folder? = null
         try {
@@ -56,26 +67,29 @@ class ImapMailGateway(
 
             // FetchProfileで必要な情報を一括取得（高速化）
             if (messages.isNotEmpty()) {
-                val fetchProfile = FetchProfile().apply {
-                    add(FetchProfile.Item.ENVELOPE)  // 送信者、件名、日付
-                    add(FetchProfile.Item.FLAGS)     // 既読、スターなどのフラグ
-                }
+                val fetchProfile =
+                    FetchProfile().apply {
+                        add(FetchProfile.Item.ENVELOPE) // 送信者、件名、日付
+                        add(FetchProfile.Item.FLAGS) // 既読、スターなどのフラグ
+                    }
                 openedInbox.fetch(messages, fetchProfile)
             }
 
-            return messages.mapIndexed { index, message ->
-                val uid = try {
-                    if (openedInbox is UIDFolder) {
-                        openedInbox.getUID(message)
-                    } else {
-                        (index + 1).toLong()
-                    }
-                } catch (e: Exception) {
-                    logger.info("UIDが見つからなかったためindexを利用します: ${e.message}", e)
-                    (index + 1).toLong()
-                }
-                convertToMailItem(message, uid)
-            }.reversed() // 新しいメールを先頭に
+            return messages
+                .mapIndexed { index, message ->
+                    val uid =
+                        try {
+                            if (openedInbox is UIDFolder) {
+                                openedInbox.getUID(message)
+                            } else {
+                                (index + 1).toLong()
+                            }
+                        } catch (e: Exception) {
+                            logger.info("UIDが見つからなかったためindexを利用します: ${e.message}", e)
+                            (index + 1).toLong()
+                        }
+                    convertToMailItem(message, uid)
+                }.reversed() // 新しいメールを先頭に
         } catch (e: Exception) {
             logger.error("エラーが発生しました: ${e.message}", e)
             throw e
@@ -85,7 +99,10 @@ class ImapMailGateway(
         }
     }
 
-    override fun toggleFlag(folderId: String, mailId: String): Boolean {
+    override fun toggleFlag(
+        folderId: String,
+        mailId: String,
+    ): Boolean {
         val store = createStore()
         var folder: Folder? = null
         try {
@@ -94,8 +111,9 @@ class ImapMailGateway(
             openedFolder.open(Folder.READ_WRITE)
             folder = openedFolder
 
-            val message = (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
-                ?: throw NoSuchElementException("Mail not found: $mailId")
+            val message =
+                (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                    ?: throw NoSuchElementException("Mail not found: $mailId")
 
             val isCurrentlyFlagged = message.flags.contains(Flags.Flag.FLAGGED)
             message.setFlag(Flags.Flag.FLAGGED, !isCurrentlyFlagged)
@@ -112,7 +130,10 @@ class ImapMailGateway(
         }
     }
 
-    override fun getMail(folderId: String, mailId: String): MailDetail? {
+    override fun getMail(
+        folderId: String,
+        mailId: String,
+    ): MailDetail? {
         val store = createStore()
         var folder: Folder? = null
         try {
@@ -121,8 +142,9 @@ class ImapMailGateway(
             openedFolder.open(Folder.READ_WRITE)
             folder = openedFolder
 
-            val message = (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
-                ?: return null
+            val message =
+                (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                    ?: return null
 
             val uid = if (openedFolder is UIDFolder) openedFolder.getUID(message) else mailId.toLong()
             val detail = convertToMailDetail(message, uid, openedFolder)
@@ -140,15 +162,28 @@ class ImapMailGateway(
         }
     }
 
-    private fun convertToMailDetail(message: Message, uid: Long, folder: Folder): MailDetail {
+    private fun convertToMailDetail(
+        message: Message,
+        uid: Long,
+        folder: Folder,
+    ): MailDetail {
         val from = message.from?.firstOrNull()?.toString() ?: "Unknown"
-        val to = message.getRecipients(Message.RecipientType.TO)
-            ?.map { extractDisplayName(MimeUtility.decodeText(it.toString())) } ?: emptyList()
-        val cc = message.getRecipients(Message.RecipientType.CC)
-            ?.map { extractDisplayName(MimeUtility.decodeText(it.toString())) } ?: emptyList()
+        val to =
+            message
+                .getRecipients(Message.RecipientType.TO)
+                ?.map { extractDisplayName(MimeUtility.decodeText(it.toString())) } ?: emptyList()
+        val cc =
+            message
+                .getRecipients(Message.RecipientType.CC)
+                ?.map { extractDisplayName(MimeUtility.decodeText(it.toString())) } ?: emptyList()
 
         val rawSubject = message.subject ?: "(No Subject)"
-        val subject = try { MimeUtility.decodeText(rawSubject) } catch (e: Exception) { rawSubject }
+        val subject =
+            try {
+                MimeUtility.decodeText(rawSubject)
+            } catch (e: Exception) {
+                rawSubject
+            }
 
         val receivedDate = message.receivedDate?.let { dateFormat.format(it) } ?: ""
         val flags = message.flags
@@ -170,8 +205,8 @@ class ImapMailGateway(
         )
     }
 
-    private fun extractBody(part: Part): Pair<String?, String?> {
-        return when {
+    private fun extractBody(part: Part): Pair<String?, String?> =
+        when {
             part.isMimeType("text/plain") -> Pair(partContentAsString(part), null)
             part.isMimeType("text/html") -> Pair(null, partContentAsString(part))
             part.isMimeType("multipart/*") -> {
@@ -187,10 +222,9 @@ class ImapMailGateway(
             }
             else -> Pair(null, null)
         }
-    }
 
-    private fun partContentAsString(part: Part): String? {
-        return try {
+    private fun partContentAsString(part: Part): String? =
+        try {
             when (val content = part.content) {
                 is String -> content
                 is InputStream -> content.bufferedReader().readText()
@@ -200,19 +234,23 @@ class ImapMailGateway(
             logger.warn("本文の読み取りに失敗しました: ${e.message}")
             null
         }
-    }
 
-    private fun convertToMailItem(message: Message, uid: Long): MailItem {
+    private fun convertToMailItem(
+        message: Message,
+        uid: Long,
+    ): MailItem {
         val from = message.from?.firstOrNull()?.toString() ?: "Unknown"
         val displayName = extractDisplayName(from)
 
         // 件名もMIMEデコード
         val rawSubject = message.subject ?: "(No Subject)"
-        val subject = try {
-            jakarta.mail.internet.MimeUtility.decodeText(rawSubject)
-        } catch (e: Exception) {
-            rawSubject
-        }
+        val subject =
+            try {
+                jakarta.mail.internet.MimeUtility
+                    .decodeText(rawSubject)
+            } catch (e: Exception) {
+                rawSubject
+            }
 
         val receivedDate = message.receivedDate?.let { dateFormat.format(it) } ?: ""
         val flags = message.flags
@@ -226,11 +264,14 @@ class ImapMailGateway(
             receivedDate = receivedDate,
             isStarred = isStarred,
             isRead = isRead,
-            senderIcon = "user"
+            senderIcon = "user",
         )
     }
 
-    override fun moveToTrash(folderId: String, mailIds: List<String>) {
+    override fun moveToTrash(
+        folderId: String,
+        mailIds: List<String>,
+    ) {
         val store = createStore()
         var folder: Folder? = null
         var expunge = false
@@ -240,9 +281,10 @@ class ImapMailGateway(
             openedFolder.open(Folder.READ_WRITE)
             folder = openedFolder
 
-            val messages = mailIds.mapNotNull { mailId ->
-                (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
-            }
+            val messages =
+                mailIds.mapNotNull { mailId ->
+                    (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                }
 
             if (messages.isEmpty()) throw NoSuchElementException("No mails found: $mailIds")
 
@@ -261,7 +303,11 @@ class ImapMailGateway(
         }
     }
 
-    override fun markRead(folderId: String, mailIds: List<String>, isRead: Boolean) {
+    override fun markRead(
+        folderId: String,
+        mailIds: List<String>,
+        isRead: Boolean,
+    ) {
         val store = createStore()
         var folder: Folder? = null
         try {
@@ -270,9 +316,10 @@ class ImapMailGateway(
             openedFolder.open(Folder.READ_WRITE)
             folder = openedFolder
 
-            val messages = mailIds.mapNotNull { mailId ->
-                (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
-            }
+            val messages =
+                mailIds.mapNotNull { mailId ->
+                    (openedFolder as? UIDFolder)?.getMessageByUID(mailId.toLong())
+                }
 
             if (messages.isEmpty()) throw NoSuchElementException("No mails found: $mailIds")
 
@@ -298,12 +345,13 @@ class ImapMailGateway(
             }
 
             // 送信したバイト列から復元するため、Message-ID を含むヘッダは送信時のまま保たれる
-            val message = MimeMessage(
-                Session.getInstance(Properties()),
-                rawMessage.inputStream(),
-            ).apply {
-                setFlag(Flags.Flag.SEEN, true) // 自分が送ったメールなので既読にする
-            }
+            val message =
+                MimeMessage(
+                    Session.getInstance(Properties()),
+                    rawMessage.inputStream(),
+                ).apply {
+                    setFlag(Flags.Flag.SEEN, true) // 自分が送ったメールなので既読にする
+                }
             sentFolder.appendMessages(arrayOf(message))
         } catch (e: Exception) {
             logger.error("送信済みフォルダへの保存中にエラーが発生しました: ${e.message}", e)
@@ -315,11 +363,13 @@ class ImapMailGateway(
 
     private fun extractDisplayName(from: String): String {
         // MIMEエンコードされた文字列をデコード
-        val decoded = try {
-            jakarta.mail.internet.MimeUtility.decodeText(from)
-        } catch (e: Exception) {
-            from
-        }
+        val decoded =
+            try {
+                jakarta.mail.internet.MimeUtility
+                    .decodeText(from)
+            } catch (e: Exception) {
+                from
+            }
 
         // "Display Name <email@example.com>" の形式から Display Name を抽出
         val regex = Regex("^(.+?)\\s*<.+>$")

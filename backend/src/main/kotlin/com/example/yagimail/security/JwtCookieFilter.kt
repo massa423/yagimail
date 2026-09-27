@@ -33,11 +33,12 @@ class JwtCookieFilter(
                 if (jwt.verify(MACVerifier(secret))) {
                     val claims = jwt.jwtClaimsSet
                     if (claims.expirationTime.after(Date())) {
-                        val auth = UsernamePasswordAuthenticationToken(
-                            claims.subject,
-                            null,
-                            listOf(SimpleGrantedAuthority("ROLE_USER")),
-                        )
+                        val auth =
+                            UsernamePasswordAuthenticationToken(
+                                claims.subject,
+                                null,
+                                listOf(SimpleGrantedAuthority("ROLE_USER")),
+                            )
                         SecurityContextHolder.getContext().authentication = auth
                     }
                 }

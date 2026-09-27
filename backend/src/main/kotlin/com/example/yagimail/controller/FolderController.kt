@@ -29,11 +29,12 @@ class FolderController(
         )
     }
 
-    private fun Folder.toResponse() = FolderResponse(
-        id = id,
-        name = name,
-        type = type.name.lowercase(),
-        messagesTotal = messagesTotal,
-        messagesUnread = messagesUnread,
-    )
+    private fun Folder.toResponse() =
+        FolderResponse(
+            id = id,
+            name = name,
+            type = type.name.lowercase(),
+            messagesTotal = messagesTotal,
+            messagesUnread = messagesUnread,
+        )
 }

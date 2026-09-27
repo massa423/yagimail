@@ -14,18 +14,18 @@ import org.mockito.Mockito.verify
 import kotlin.test.assertFailsWith
 
 class SendMailUseCaseTest {
-
     private val mailSenderGateway = mock(MailSenderGateway::class.java)
     private val mailGateway = mock(MailGateway::class.java)
     private val sendMailUseCase = SendMailUseCase(mailSenderGateway, mailGateway)
 
-    private val mail = OutgoingMail(
-        to = listOf("a@example.com"),
-        cc = emptyList(),
-        bcc = emptyList(),
-        subject = "テスト件名",
-        body = "テスト本文です。",
-    )
+    private val mail =
+        OutgoingMail(
+            to = listOf("a@example.com"),
+            cc = emptyList(),
+            bcc = emptyList(),
+            subject = "テスト件名",
+            body = "テスト本文です。",
+        )
     private val sentMessage = "Message-ID: <test@example.com>\r\n\r\nテスト本文です。".toByteArray()
 
     @Test
@@ -44,7 +44,8 @@ class SendMailUseCaseTest {
     fun `送信済みフォルダへの保存に失敗しても例外を投げない`() {
         given(mailSenderGateway.send(mail)).willReturn(sentMessage)
         willThrow(RuntimeException("IMAP append failed"))
-            .given(mailGateway).appendToSent(sentMessage)
+            .given(mailGateway)
+            .appendToSent(sentMessage)
 
         sendMailUseCase.execute(mail)
 

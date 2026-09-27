@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @WebMvcTest(FolderController::class)
 class FolderControllerTest {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -24,14 +23,16 @@ class FolderControllerTest {
 
     @Test
     fun `GET api v1 folders はフォルダ一覧をJSON形式で返す`() {
-        val mockFolders = listOf(
-            Folder(id = "INBOX", name = "受信トレイ", type = FolderType.SYSTEM, messagesTotal = 100, messagesUnread = 15),
-            Folder(id = "SENT", name = "送信済み", type = FolderType.SYSTEM, messagesTotal = 50, messagesUnread = 0),
-            Folder(id = "MyFolder", name = "MyFolder", type = FolderType.USER, messagesTotal = 10, messagesUnread = 2),
-        )
+        val mockFolders =
+            listOf(
+                Folder(id = "INBOX", name = "受信トレイ", type = FolderType.SYSTEM, messagesTotal = 100, messagesUnread = 15),
+                Folder(id = "SENT", name = "送信済み", type = FolderType.SYSTEM, messagesTotal = 50, messagesUnread = 0),
+                Folder(id = "MyFolder", name = "MyFolder", type = FolderType.USER, messagesTotal = 10, messagesUnread = 2),
+            )
         given(getFolderListUseCase.execute()).willReturn(mockFolders)
 
-        mockMvc.perform(get("/api/v1/folders"))
+        mockMvc
+            .perform(get("/api/v1/folders"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.folders").isArray())
             .andExpect(jsonPath("$.folders.length()").value(3))
@@ -50,7 +51,8 @@ class FolderControllerTest {
     fun `GET api v1 folders はフォルダが空の場合に空配列を返す`() {
         given(getFolderListUseCase.execute()).willReturn(emptyList())
 
-        mockMvc.perform(get("/api/v1/folders"))
+        mockMvc
+            .perform(get("/api/v1/folders"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.folders").isArray())
             .andExpect(jsonPath("$.folders.length()").value(0))

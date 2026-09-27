@@ -14,9 +14,10 @@ import java.net.URL
 class VerifyGoogleTokenUseCase(
     @Value("\${google.client-id}") private val googleClientId: String,
 ) {
-    private val jwkSource = JWKSourceBuilder
-        .create<SecurityContext>(URL("https://www.googleapis.com/oauth2/v3/certs"))
-        .build()
+    private val jwkSource =
+        JWKSourceBuilder
+            .create<SecurityContext>(URL("https://www.googleapis.com/oauth2/v3/certs"))
+            .build()
 
     fun execute(idToken: String): AuthUser? {
         return try {

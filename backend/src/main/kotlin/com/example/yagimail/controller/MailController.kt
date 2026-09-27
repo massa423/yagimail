@@ -13,9 +13,18 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
-data class FlagResponse(val isStarred: Boolean)
-data class MoveToTrashRequest(val mailIds: List<String>)
-data class MarkReadRequest(val mailIds: List<String>, val isRead: Boolean)
+data class FlagResponse(
+    val isStarred: Boolean,
+)
+
+data class MoveToTrashRequest(
+    val mailIds: List<String>,
+)
+
+data class MarkReadRequest(
+    val mailIds: List<String>,
+    val isRead: Boolean,
+)
 
 @RestController
 class MailController(
@@ -29,8 +38,9 @@ class MailController(
         @PathVariable folderId: String,
         @PathVariable mailId: String,
     ): ResponseEntity<MailDetail> {
-        val detail = getMailUseCase.execute(folderId, mailId)
-            ?: return ResponseEntity.notFound().build()
+        val detail =
+            getMailUseCase.execute(folderId, mailId)
+                ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok(detail)
     }
 
@@ -38,14 +48,13 @@ class MailController(
     fun toggleFlag(
         @PathVariable folderId: String,
         @PathVariable mailId: String,
-    ): ResponseEntity<FlagResponse> {
-        return try {
+    ): ResponseEntity<FlagResponse> =
+        try {
             val isStarred = toggleFlagUseCase.execute(folderId, mailId)
             ResponseEntity.ok(FlagResponse(isStarred))
         } catch (e: NoSuchElementException) {
             ResponseEntity.notFound().build()
         }
-    }
 
     @PatchMapping("/api/v1/folders/{folderId}/mails/read")
     fun markRead(
@@ -67,12 +76,11 @@ class MailController(
     fun moveToTrash(
         @PathVariable folderId: String,
         @RequestBody request: MoveToTrashRequest,
-    ): ResponseEntity<Void> {
-        return try {
+    ): ResponseEntity<Void> =
+        try {
             moveToTrashUseCase.execute(folderId, request.mailIds)
             ResponseEntity.noContent().build()
         } catch (e: NoSuchElementException) {
             ResponseEntity.notFound().build()
         }
-    }
 }

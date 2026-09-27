@@ -3,12 +3,12 @@ package com.example.yagimail.gateways
 import com.example.yagimail.domain.gateway.FolderGateway
 import com.example.yagimail.domain.model.Folder
 import com.example.yagimail.domain.model.FolderType
-import jakarta.mail.Folder as MailFolder
 import jakarta.mail.Session
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.Properties
+import jakarta.mail.Folder as MailFolder
 
 @Component
 class ImapFolderGateway(
@@ -22,41 +22,43 @@ class ImapFolderGateway(
 
     // IMAPフォルダ名（小文字）-> (正規化ID, 表示名) のマッピング
     // Gmail, Yahoo Mail, Outlook 等の主要プロバイダーの標準フォルダ名に対応
-    private val systemFolderMap = mapOf(
-        "inbox" to Pair("INBOX", "受信トレイ"),
-        "sent" to Pair("SENT", "送信済み"),
-        "sent mail" to Pair("SENT", "送信済み"),
-        "sent items" to Pair("SENT", "送信済み"),
-        "[gmail]/sent mail" to Pair("SENT", "送信済み"),
-        "drafts" to Pair("DRAFT", "下書き"),
-        "draft" to Pair("DRAFT", "下書き"),
-        "[gmail]/drafts" to Pair("DRAFT", "下書き"),
-        "trash" to Pair("TRASH", "ゴミ箱"),
-        "deleted" to Pair("TRASH", "ゴミ箱"),
-        "deleted items" to Pair("TRASH", "ゴミ箱"),
-        "deleted messages" to Pair("TRASH", "ゴミ箱"),
-        "[gmail]/trash" to Pair("TRASH", "ゴミ箱"),
-        "spam" to Pair("SPAM", "スパム"),
-        "junk" to Pair("SPAM", "スパム"),
-        "junk e-mail" to Pair("SPAM", "スパム"),
-        "junk mail" to Pair("SPAM", "スパム"),
-        "bulk mail" to Pair("SPAM", "スパム"),
-        "[gmail]/spam" to Pair("SPAM", "スパム"),
-        "archive" to Pair("ARCHIVE", "アーカイブ"),
-        "[gmail]/all mail" to Pair("ARCHIVE", "アーカイブ"),
-    )
+    private val systemFolderMap =
+        mapOf(
+            "inbox" to Pair("INBOX", "受信トレイ"),
+            "sent" to Pair("SENT", "送信済み"),
+            "sent mail" to Pair("SENT", "送信済み"),
+            "sent items" to Pair("SENT", "送信済み"),
+            "[gmail]/sent mail" to Pair("SENT", "送信済み"),
+            "drafts" to Pair("DRAFT", "下書き"),
+            "draft" to Pair("DRAFT", "下書き"),
+            "[gmail]/drafts" to Pair("DRAFT", "下書き"),
+            "trash" to Pair("TRASH", "ゴミ箱"),
+            "deleted" to Pair("TRASH", "ゴミ箱"),
+            "deleted items" to Pair("TRASH", "ゴミ箱"),
+            "deleted messages" to Pair("TRASH", "ゴミ箱"),
+            "[gmail]/trash" to Pair("TRASH", "ゴミ箱"),
+            "spam" to Pair("SPAM", "スパム"),
+            "junk" to Pair("SPAM", "スパム"),
+            "junk e-mail" to Pair("SPAM", "スパム"),
+            "junk mail" to Pair("SPAM", "スパム"),
+            "bulk mail" to Pair("SPAM", "スパム"),
+            "[gmail]/spam" to Pair("SPAM", "スパム"),
+            "archive" to Pair("ARCHIVE", "アーカイブ"),
+            "[gmail]/all mail" to Pair("ARCHIVE", "アーカイブ"),
+        )
 
     // システムフォルダの表示順序
     private val systemFolderOrder = listOf("INBOX", "SENT", "DRAFT", "TRASH", "SPAM", "ARCHIVE")
 
     override fun getFolderList(): List<Folder> {
-        val properties = Properties().apply {
-            put("mail.store.protocol", protocol)
-            put("mail.${protocol}.host", host)
-            put("mail.${protocol}.port", port.toString())
-            put("mail.${protocol}.ssl.enable", "true")
-            put("mail.${protocol}.ssl.trust", "*")
-        }
+        val properties =
+            Properties().apply {
+                put("mail.store.protocol", protocol)
+                put("mail.$protocol.host", host)
+                put("mail.$protocol.port", port.toString())
+                put("mail.$protocol.ssl.enable", "true")
+                put("mail.$protocol.ssl.trust", "*")
+            }
 
         val session = Session.getInstance(properties)
         val store = session.getStore(protocol)
@@ -81,13 +83,14 @@ class ImapFolderGateway(
 
                 val (messagesTotal, messagesUnread) = getMessageCounts(mailFolder)
 
-                val folder = Folder(
-                    id = id,
-                    name = name,
-                    type = type,
-                    messagesTotal = messagesTotal,
-                    messagesUnread = messagesUnread,
-                )
+                val folder =
+                    Folder(
+                        id = id,
+                        name = name,
+                        type = type,
+                        messagesTotal = messagesTotal,
+                        messagesUnread = messagesUnread,
+                    )
 
                 if (type == FolderType.SYSTEM) {
                     // 同じカテゴリのシステムフォルダが複数存在する場合は最初に見つかったものを使う
@@ -108,8 +111,8 @@ class ImapFolderGateway(
         }
     }
 
-    private fun getMessageCounts(folder: MailFolder): Pair<Int, Int> {
-        return try {
+    private fun getMessageCounts(folder: MailFolder): Pair<Int, Int> =
+        try {
             folder.open(MailFolder.READ_ONLY)
             val total = folder.messageCount
             val unread = folder.unreadMessageCount
@@ -119,5 +122,4 @@ class ImapFolderGateway(
             logger.warn("フォルダ \"${folder.fullName}\" のメッセージ数取得に失敗しました: ${e.message}")
             Pair(0, 0)
         }
-    }
 }

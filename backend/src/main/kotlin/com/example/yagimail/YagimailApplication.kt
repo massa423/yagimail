@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class YagimailApplication
 
 fun main(args: Array<String>) {
-	runApplication<YagimailApplication>(*args)
+    runApplication<YagimailApplication>(*args)
 }

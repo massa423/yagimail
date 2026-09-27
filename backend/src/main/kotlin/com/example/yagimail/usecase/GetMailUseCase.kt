@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class GetMailUseCase(
-    private val mailGateway: MailGateway
+    private val mailGateway: MailGateway,
 ) {
-    fun execute(folderId: String, mailId: String): MailDetail? =
-        mailGateway.getMail(folderId, mailId)
+    fun execute(
+        folderId: String,
+        mailId: String,
+    ): MailDetail? = mailGateway.getMail(folderId, mailId)
 }

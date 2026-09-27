@@ -8,7 +8,5 @@ import org.springframework.stereotype.Service
 class GetFolderListUseCase(
     private val folderGateway: FolderGateway,
 ) {
-    fun execute(): List<Folder> {
-        return folderGateway.getFolderList()
-    }
+    fun execute(): List<Folder> = folderGateway.getFolderList()
 }
